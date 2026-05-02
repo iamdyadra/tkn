@@ -1,0 +1,18 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /tkn/
+  
+  # Arahkan root request ke index.html di dalam dist
+  RewriteRule ^$ dist/index.html [L]
+
+  # 1. Jika file aset (js/css/images) aslinya ada di dalam dist/, layani dari dist/
+  RewriteCond %{DOCUMENT_ROOT}/tkn/dist/$1 -f
+  RewriteRule ^(.*)$ dist/$1 [L]
+
+  # 2. Jika request bukan mengarah ke file nyata di root
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  
+  # Router React menangani URL apa pun, jadi semuanya jatuh kembali ke dist/index.html
+  RewriteRule ^(.*)$ dist/index.html [L]
+</IfModule>
