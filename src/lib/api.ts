@@ -1,19 +1,19 @@
 // API Service Layer — E-Catalogue terhubung dengan Backend PHP
-// Sekarang terhubung langsung menggunakan fetch dengan dukungan Offline Mode (Caching & Queueing)
+// Semua konfigurasi endpoint dan cache key terpusat di: src/config/env.ts
 
 import type { User, Produk, Kategori, Pesanan, PesananStatus } from '@/types';
-
-export const USE_MOCK = false;
-export const BASE_URL = 'http://localhost/tkn/api';
-
-const CACHE_KEY_PRODUK = 'tkn_cache_produk';
-const CACHE_KEY_KATEGORI = 'tkn_cache_kategori';
-const QUEUE_KEY_PESANAN = 'tkn_offline_orders';
+import {
+  API_BASE_URL,
+  CACHE_KEY_PRODUK,
+  CACHE_KEY_KATEGORI,
+  QUEUE_KEY_PESANAN,
+  ENDPOINTS,
+} from '@/config/env';
 
 // ─── Helper Fetch API ─────────────────────────────────────────
 async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const isGet = !options.method || options.method === 'GET';
-  
+
   // Jika offline dan permintaan adalah GET, coba ambil dari cache
   if (!navigator.onLine && isGet) {
     if (endpoint.includes('/produk/')) {
@@ -27,7 +27,7 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -44,9 +44,9 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
 
     // Simpan ke cache jika sukses dan ini adalah list produk/kategori
     if (isGet) {
-      if (endpoint === '/produk/index.php?is_aktif=1') {
+      if (endpoint === ENDPOINTS.produk.aktif) {
         localStorage.setItem(CACHE_KEY_PRODUK, JSON.stringify(data.data));
-      } else if (endpoint === '/kategori/index.php') {
+      } else if (endpoint === ENDPOINTS.kategori.index) {
         localStorage.setItem(CACHE_KEY_KATEGORI, JSON.stringify(data.data));
       }
     }
@@ -74,7 +74,7 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
 export const authApi = {
   async login(email: string, password: string): Promise<User | null> {
     try {
-      return await apiCall<User>('/auth/login.php', {
+      return await apiCall<User>(ENDPOINTS.auth.login, {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
@@ -84,7 +84,7 @@ export const authApi = {
   },
 
   async register(data: { nama: string; email: string; password: string; telepon: string; wilayah?: string }): Promise<User> {
-    return apiCall<User>('/auth/register.php', {
+    return apiCall<User>(ENDPOINTS.auth.register, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -96,11 +96,11 @@ export const authApi = {
 // ═══════════════════════════════════════════════════════════════
 export const produkApi = {
   async getAll(): Promise<Produk[]> {
-    return apiCall<Produk[]>('/produk/index.php?is_aktif=1');
+    return apiCall<Produk[]>(ENDPOINTS.produk.aktif);
   },
 
   async getAllAdmin(): Promise<Produk[]> {
-    return apiCall<Produk[]>('/produk/index.php');
+    return apiCall<Produk[]>(ENDPOINTS.produk.index);
   },
 
   async getById(id: number): Promise<Produk | undefined> {
@@ -114,25 +114,25 @@ export const produkApi = {
   },
 
   async getPromo(): Promise<Produk[]> {
-    return apiCall<Produk[]>('/produk/index.php?is_promo=1');
+    return apiCall<Produk[]>(ENDPOINTS.produk.promo);
   },
 
   async create(data: Omit<Produk, 'id' | 'created_at'>): Promise<Produk> {
-    return apiCall<Produk>('/produk/index.php', {
+    return apiCall<Produk>(ENDPOINTS.produk.index, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   async update(id: number, data: Partial<Produk>): Promise<Produk> {
-    return apiCall<Produk>(`/produk/index.php?id=${id}`, {
+    return apiCall<Produk>(ENDPOINTS.produk.byId(id), {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   async delete(id: number): Promise<void> {
-    await apiCall<void>(`/produk/index.php?id=${id}`, { method: 'DELETE' });
+    await apiCall<void>(ENDPOINTS.produk.byId(id), { method: 'DELETE' });
   },
 };
 
@@ -141,25 +141,25 @@ export const produkApi = {
 // ═══════════════════════════════════════════════════════════════
 export const kategoriApi = {
   async getAll(): Promise<Kategori[]> {
-    return apiCall<Kategori[]>('/kategori/index.php');
+    return apiCall<Kategori[]>(ENDPOINTS.kategori.index);
   },
 
   async create(data: Omit<Kategori, 'id' | 'created_at'>): Promise<Kategori> {
-    return apiCall<Kategori>('/kategori/index.php', {
+    return apiCall<Kategori>(ENDPOINTS.kategori.index, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   async update(id: number, data: Partial<Kategori>): Promise<Kategori> {
-    return apiCall<Kategori>(`/kategori/index.php?id=${id}`, {
+    return apiCall<Kategori>(ENDPOINTS.kategori.byId(id), {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   async delete(id: number): Promise<void> {
-    await apiCall<void>(`/kategori/index.php?id=${id}`, { method: 'DELETE' });
+    await apiCall<void>(ENDPOINTS.kategori.byId(id), { method: 'DELETE' });
   },
 };
 
@@ -168,12 +168,14 @@ export const kategoriApi = {
 // ═══════════════════════════════════════════════════════════════
 export const pesananApi = {
   async getAll(): Promise<Pesanan[]> {
-    return apiCall<Pesanan[]>('/pesanan/index.php');
+    return apiCall<Pesanan[]>(ENDPOINTS.pesanan.index);
   },
 
   async getByUser(salesId: number): Promise<Pesanan[]> {
-    const onlineData = navigator.onLine ? await apiCall<Pesanan[]>(`/pesanan/index.php?sales_id=${salesId}`) : [];
-    
+    const onlineData = navigator.onLine
+      ? await apiCall<Pesanan[]>(ENDPOINTS.pesanan.bySales(salesId))
+      : [];
+
     // Gabungkan dengan yang masih di queue offline
     const queue = JSON.parse(localStorage.getItem(QUEUE_KEY_PESANAN) || '[]');
     const offlinePesanan = queue.map((p: any, idx: number) => ({
@@ -188,7 +190,7 @@ export const pesananApi = {
   },
 
   async getByKode(kode: string): Promise<Pesanan | undefined> {
-    return apiCall<Pesanan>(`/pesanan/index.php?kode=${kode}`).catch(() => undefined);
+    return apiCall<Pesanan>(ENDPOINTS.pesanan.byKode(kode)).catch(() => undefined);
   },
 
   async create(data: Omit<Pesanan, 'id' | 'kode' | 'status' | 'created_at'>): Promise<Pesanan> {
@@ -206,26 +208,26 @@ export const pesananApi = {
       return newOrder as any;
     }
 
-    return apiCall<Pesanan>('/pesanan/index.php', {
+    return apiCall<Pesanan>(ENDPOINTS.pesanan.index, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   async updateStatus(id: number, status: PesananStatus): Promise<Pesanan> {
-    return apiCall<Pesanan>(`/pesanan/index.php?id=${id}`, {
+    return apiCall<Pesanan>(ENDPOINTS.pesanan.byId(id), {
       method: 'PUT',
       body: JSON.stringify({ status }),
     });
   },
 
   async delete(id: number): Promise<void> {
-    await apiCall<void>(`/pesanan/index.php?id=${id}`, { method: 'DELETE' });
+    await apiCall<void>(ENDPOINTS.pesanan.byId(id), { method: 'DELETE' });
   },
 
   async syncOfflinePending(): Promise<void> {
     if (!navigator.onLine) return;
-    
+
     const queue = JSON.parse(localStorage.getItem(QUEUE_KEY_PESANAN) || '[]');
     if (queue.length === 0) return;
 
@@ -234,7 +236,7 @@ export const pesananApi = {
 
     for (const item of queue) {
       try {
-        await apiCall('/pesanan/index.php', {
+        await apiCall(ENDPOINTS.pesanan.index, {
           method: 'POST',
           body: JSON.stringify(item),
         });
@@ -253,22 +255,22 @@ export const pesananApi = {
 // ═══════════════════════════════════════════════════════════════
 export const userApi = {
   async getSales(): Promise<User[]> {
-    return apiCall<User[]>('/users/index.php?role=sales');
+    return apiCall<User[]>(ENDPOINTS.users.sales);
   },
 
   async getAll(): Promise<User[]> {
-    return apiCall<User[]>('/users/index.php');
+    return apiCall<User[]>(ENDPOINTS.users.index);
   },
 
   async create(data: Omit<User, 'id' | 'created_at'>): Promise<User> {
-    return apiCall<User>('/auth/register.php', {
+    return apiCall<User>(ENDPOINTS.auth.register, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   async setActive(id: number, is_aktif: boolean): Promise<User> {
-    return apiCall<User>(`/users/index.php?id=${id}`, {
+    return apiCall<User>(ENDPOINTS.users.byId(id), {
       method: 'PUT',
       body: JSON.stringify({ is_aktif: is_aktif ? 1 : 0 }),
     });

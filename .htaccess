@@ -1,18 +1,22 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /tkn/
-  
-  # Arahkan root request ke index.html di dalam dist
-  RewriteRule ^$ dist/index.html [L]
+  RewriteBase /
 
-  # 1. Jika file aset (js/css/images) aslinya ada di dalam dist/, layani dari dist/
-  RewriteCond %{DOCUMENT_ROOT}/tkn/dist/$1 -f
-  RewriteRule ^(.*)$ dist/$1 [L]
+  # ── [PENTING] Biarkan request ke /api/ diproses PHP langsung ──
+  RewriteRule ^api/ - [L]
 
-  # 2. Jika request bukan mengarah ke file nyata di root
+  # ── Arahkan root request ke React SPA ─────────────────────────
+  RewriteRule ^$ index.html [L]
+
+  # ── Layani aset statis (js, css, images, fonts) ────────────────
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+
+  # ── Semua route lain → React Router (SPA fallback) ────────────
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  
-  # Router React menangani URL apa pun, jadi semuanya jatuh kembali ke dist/index.html
-  RewriteRule ^(.*)$ dist/index.html [L]
+  RewriteRule ^(.*)$ index.html [L]
+
 </IfModule>
+
+

@@ -40,6 +40,7 @@ import HomePage from '@/pages/HomePage';
 
 import NotFound from '@/pages/NotFound';
 
+import { APP_BASE_PATH } from './config/env';
 
 const queryClient = new QueryClient();
 
@@ -52,7 +53,7 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner richColors position="top-right" />
-              <BrowserRouter basename="/tkn">
+              <BrowserRouter basename={APP_BASE_PATH}>
                 <Routes>
                   {/* Public Landing Page */}
                   <Route path="/" element={<HomePage />} />
