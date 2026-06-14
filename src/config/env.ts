@@ -65,4 +65,17 @@ export const ENDPOINTS = {
     sales:    '/users/index.php?role=sales',
     byId:     (id: number) => `/users/index.php?id=${id}`,
   },
+  komisi: {
+    index:    '/komisi/index.php',
+    bySales:  (salesId: number) => `/komisi/index.php?sales_id=${salesId}`,
+    byId:     (id: number)      => `/komisi/index.php?id=${id}`,
+    summary:  (salesId: number) => `/komisi/index.php?summary=1&sales_id=${salesId}`,
+    rules:    '/komisi/rules.php',
+    ruleById: (id: number)      => `/komisi/rules.php?id=${id}`,
+  },
+  dashboard: {
+    index:       '/dashboard/index.php',
+    byYear:      (year: number) => `/dashboard/index.php?year=${year}`,
+  },
 } as const;
+

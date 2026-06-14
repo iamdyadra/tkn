@@ -2,65 +2,172 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/*
+  ┌─────────────────────────────────────────────────────────┐
+  │   TKN TRAVEL — Design System                            │
+  │   Color Strategy (inspired by TKN Sunset Logo):         │
+  │   • 60% Orange Sunset  — primary / CTA / hero          │
+  │   • 25% White & Light  — backgrounds / cards           │
+  │   • 15% Navy Blue      — support / contrast / trust    │
+  │                                                         │
+  │   Extracted palette from logo:                          │
+  │   Sunset Gold  : hsl(38 95% 55%)   → #F5A623           │
+  │   Sunset Orange: hsl(25 95% 53%)   → #F97316           │
+  │   Sunset Deep  : hsl(16 88% 48%)   → #E84E1B           │
+  │   Navy Blue    : hsl(214 60% 22%)  → #1B3A6B           │
+  │   Navy Dark    : hsl(218 65% 14%)  → #122248           │
+  └─────────────────────────────────────────────────────────┘
 */
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* ── Backgrounds ────────────────────────────── */
+    --background:        30 30% 98%;          /* warm off-white  */
+    --foreground:        218 65% 14%;         /* navy dark       */
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card:              0 0% 100%;
+    --card-foreground:   218 65% 14%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover:           0 0% 100%;
+    --popover-foreground:218 65% 14%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
+    /* ── Primary = Orange Sunset ────────────────── */
+    --primary:           25 95% 53%;          /* #F97316 orange  */
+    --primary-foreground:0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 25% 15%;
+    /* ── Secondary = Warm Light ─────────────────── */
+    --secondary:         30 60% 95%;          /* warm peach tint */
+    --secondary-foreground:218 65% 14%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    /* ── Muted = Warm Gray ──────────────────────── */
+    --muted:             30 20% 95%;
+    --muted-foreground:  30 10% 45%;
 
-    --accent: 25 95% 53%;
+    /* ── Accent = Sunset Gold ───────────────────── */
+    --accent:            38 95% 55%;          /* #F5A623 amber   */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    /* ── Destructive ────────────────────────────── */
+    --destructive:       0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 60%;
+    /* ── Borders & Ring ─────────────────────────── */
+    --border:            30 30% 88%;          /* warm border     */
+    --input:             30 30% 88%;
+    --ring:              25 95% 53%;          /* orange ring     */
 
-    --radius: 0.75rem;
+    /* ── Radius ─────────────────────────────────── */
+    --radius:            0.75rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 215 25% 15%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 96%;
-    --sidebar-accent-foreground: 215 25% 15%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 217 91% 60%;
+    /* ── Sidebar (Navy Blue theme) ──────────────── */
+    --sidebar-background:        214 60% 18%;  /* navy            */
+    --sidebar-foreground:        30 80% 95%;   /* warm white      */
+    --sidebar-primary:           25 95% 60%;   /* bright orange   */
+    --sidebar-primary-foreground:0 0% 100%;
+    --sidebar-accent:            214 50% 25%;  /* navy lighter    */
+    --sidebar-accent-foreground: 30 80% 95%;
+    --sidebar-border:            214 50% 28%;
+    --sidebar-ring:              25 95% 60%;
   }
 }
 
+/* ── Custom TKN Color Tokens ─────────────────────────────── */
+@layer base {
+  :root {
+    /* Sunset gradient stops */
+    --sunset-gold:   hsl(38 95% 55%);
+    --sunset-orange: hsl(25 95% 53%);
+    --sunset-deep:   hsl(16 88% 48%);
+    --sunset-red:    hsl(8 82% 42%);
+
+    /* Navy blue palette */
+    --navy-light:    hsl(214 50% 35%);
+    --navy:          hsl(214 60% 22%);
+    --navy-dark:     hsl(218 65% 14%);
+    --navy-darker:   hsl(220 70% 10%);
+  }
+}
+
+/* ── Utility Classes ─────────────────────────────────────── */
+@layer utilities {
+  /* Sunset gradient — primary brand gradient */
+  .bg-sunset {
+    background: linear-gradient(135deg, var(--sunset-gold) 0%, var(--sunset-orange) 40%, var(--sunset-deep) 100%);
+  }
+
+  /* Sunset text gradient */
+  .text-sunset {
+    background: linear-gradient(135deg, var(--sunset-gold), var(--sunset-deep));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Navy gradient */
+  .bg-navy {
+    background: linear-gradient(135deg, var(--navy-light) 0%, var(--navy-dark) 100%);
+  }
+
+  /* Hero overlay gradient */
+  .bg-hero-overlay {
+    background: linear-gradient(
+      to bottom,
+      hsl(214 60% 12% / 0.75) 0%,
+      hsl(25 95% 40% / 0.55)  50%,
+      hsl(214 60% 10% / 0.85) 100%
+    );
+  }
+
+  /* Warm card hover effect */
+  .card-sunset-hover {
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  .card-sunset-hover:hover {
+    box-shadow: 0 8px 30px hsl(25 95% 53% / 0.18);
+    transform: translateY(-2px);
+  }
+}
+
+/* ── Global Base Styles ──────────────────────────────────── */
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', 'system-ui', sans-serif;
   }
+
+  /* Selection highlight */
+  ::selection {
+    background-color: hsl(25 95% 53% / 0.25);
+    color: hsl(218 65% 14%);
+  }
+}
+
+/* ── Scrollbar Styling ───────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(30 20% 95%);
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(25 95% 65%);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(25 95% 53%);
+}
+
+/* ── Focus Ring ──────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid hsl(25 95% 53%);
+  outline-offset: 2px;
 }

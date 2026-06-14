@@ -50,19 +50,30 @@ elseif ($method === 'DELETE') {
     if (!$id) {
         sendResponse(false, null, 'ID kategori tidak ada');
     }
-    
-    // Check if products exist
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM produk WHERE kategori_id = ?");
-    $stmt->execute([$id]);
-    if ($stmt->fetchColumn() > 0) {
-        sendResponse(false, null, 'Kategori tidak dapat dihapus karena memiliki produk');
+
+    // Hitung jumlah produk yang akan terhapus (karena ON DELETE CASCADE)
+    $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM produk WHERE kategori_id = ?");
+    $stmtCount->execute([$id]);
+    $produkCount = (int)$stmtCount->fetchColumn();
+
+    // Cek apakah komisi_rules aktif masih mereferensi kategori ini
+    $stmtRule = $pdo->prepare("SELECT COUNT(*) FROM komisi_rules WHERE kategori_id = ? AND is_aktif = 1");
+    $stmtRule->execute([$id]);
+    $ruleCount = (int)$stmtRule->fetchColumn();
+    if ($ruleCount > 0) {
+        sendResponse(false, null, "Kategori tidak dapat dihapus karena masih digunakan oleh {$ruleCount} aturan komisi aktif. Nonaktifkan aturan komisi tersebut terlebih dahulu.");
     }
 
+    // Hapus kategori — produk di dalamnya terhapus otomatis via ON DELETE CASCADE
     $stmt = $pdo->prepare("DELETE FROM kategori WHERE id = ?");
     if ($stmt->execute([$id])) {
-        sendResponse(true, null, 'Kategori dihapus');
+        $msg = $produkCount > 0
+            ? "Kategori beserta {$produkCount} produk di dalamnya berhasil dihapus"
+            : 'Kategori berhasil dihapus';
+        sendResponse(true, ['produk_terhapus' => $produkCount], $msg);
     } else {
         sendResponse(false, null, 'Gagal menghapus kategori');
     }
 }
 ?>
+

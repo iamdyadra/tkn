@@ -45,7 +45,7 @@ export default function BandingkanPage() {
           <h2 className="text-xl font-semibold text-gray-600">Belum ada produk untuk dibandingkan</h2>
           <p className="text-gray-400 text-sm mt-2">Tambahkan 2–4 produk dari katalog untuk membandingkannya</p>
           <Link to="/katalog">
-            <Button className="mt-6 bg-indigo-600 hover:bg-indigo-700 gap-2">
+            <Button className="mt-6 bg-orange-600 hover:bg-orange-700 gap-2">
               <ArrowLeft className="h-4 w-4" /> Ke Katalog
             </Button>
           </Link>
@@ -64,14 +64,14 @@ export default function BandingkanPage() {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <Link to="/katalog" className="text-indigo-600 hover:underline text-sm flex items-center gap-1">
+            <Link to="/katalog" className="text-orange-600 hover:underline text-sm flex items-center gap-1">
               <ArrowLeft className="h-4 w-4" /> Kembali
             </Link>
             <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <ArrowLeftRight className="h-5 w-5 text-indigo-600" />
+              <ArrowLeftRight className="h-5 w-5 text-orange-600" />
               Perbandingan Produk
             </h1>
-            <Badge className="bg-indigo-100 text-indigo-700">{items.length} produk</Badge>
+            <Badge className="bg-orange-100 text-orange-700">{items.length} produk</Badge>
           </div>
           <Button variant="outline" onClick={clearCompare} className="gap-2 text-red-600 border-red-200 hover:bg-red-50">
             <Trash2 className="h-4 w-4" /> Hapus Semua
@@ -117,7 +117,7 @@ export default function BandingkanPage() {
             <CompareRow label="Nama Layanan" highlight={false} items={items.length}>
               {items.map(p => (
                 <div key={p.id} className="p-3 border-l border-gray-200">
-                  <Link to={`/katalog/${p.id}`} className="text-sm font-semibold text-indigo-700 hover:underline line-clamp-2">{p.nama}</Link>
+                  <Link to={`/katalog/${p.id}`} className="text-sm font-semibold text-orange-700 hover:underline line-clamp-2">{p.nama}</Link>
                   <p className="text-xs text-gray-500 mt-0.5">{p.merek} · {p.sku}</p>
                 </div>
               ))}
@@ -183,7 +183,7 @@ export default function BandingkanPage() {
                     size="sm"
                     onClick={() => handleAddCart(p)}
                     disabled={p.stok === 0}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 gap-1.5 text-xs"
+                    className="w-full bg-orange-600 hover:bg-orange-700 gap-1.5 text-xs"
                   >
                     <ShoppingCart className="h-3.5 w-3.5" />
                     {p.stok === 0 ? 'Habis' : '+ Pesanan'}

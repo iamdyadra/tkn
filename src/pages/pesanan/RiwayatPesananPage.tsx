@@ -33,20 +33,34 @@ export default function RiwayatPesananPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    pesananApi.getByUser(user!.id).then(data => {
-      const sorted = [...data].sort((a, b) => b.created_at.localeCompare(a.created_at));
-      // Admin bisa lihat semua
-      if (user?.role === 'admin') {
-        pesananApi.getAll().then(all => {
-          const sorted2 = [...all].sort((a, b) => b.created_at.localeCompare(a.created_at));
-          setPesanan(sorted2);
-          setLoading(false);
+    if (!user) return;
+    setLoading(true);
+
+    const fetchData = async () => {
+      try {
+        let data: Pesanan[];
+        if (user.role === 'admin') {
+          // Admin bisa lihat semua pesanan
+          data = await pesananApi.getAll();
+        } else {
+          // Sales hanya lihat pesanan milik sendiri
+          data = await pesananApi.getByUser(user.id);
+        }
+        // Sort terbaru di atas, aman jika created_at undefined
+        const sorted = [...data].sort((a, b) => {
+          const ta = a.created_at ?? '';
+          const tb = b.created_at ?? '';
+          return tb.localeCompare(ta);
         });
-      } else {
         setPesanan(sorted);
+      } catch (err) {
+        console.error('Gagal memuat riwayat pesanan:', err);
+      } finally {
         setLoading(false);
       }
-    });
+    };
+
+    fetchData();
   }, [user]);
 
   const filtered = pesanan.filter(p => {
@@ -64,11 +78,11 @@ export default function RiwayatPesananPage() {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <History className="h-5 w-5 text-indigo-600" />
+            <History className="h-5 w-5 text-orange-600" />
             Riwayat Pesanan
           </h1>
           <Link to="/pesanan/buat">
-            <Button className="bg-indigo-600 hover:bg-indigo-700 gap-2">+ Buat Pesanan</Button>
+            <Button className="bg-orange-600 hover:bg-orange-700 gap-2">+ Buat Pesanan</Button>
           </Link>
         </div>
 
@@ -76,7 +90,7 @@ export default function RiwayatPesananPage() {
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setFilterStatus('semua')}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filterStatus === 'semua' ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:border-indigo-400'}`}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filterStatus === 'semua' ? 'bg-orange-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:border-orange-400'}`}
           >
             Semua
           </button>
@@ -84,7 +98,7 @@ export default function RiwayatPesananPage() {
             <button
               key={s}
               onClick={() => setFilterStatus(s)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filterStatus === s ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:border-indigo-400'}`}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filterStatus === s ? 'bg-orange-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:border-orange-400'}`}
             >
               {STATUS_CONFIG[s].label}
             </button>
@@ -99,7 +113,7 @@ export default function RiwayatPesananPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Cari kode atau pelanggan..."
-            className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+            className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 bg-white"
           />
         </div>
 
@@ -119,24 +133,26 @@ export default function RiwayatPesananPage() {
             {filtered.map(p => {
               const cfg = STATUS_CONFIG[p.status];
               return (
-                <div key={p.id} className="bg-white rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all">
+                <div key={p.id} className="bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all">
                   <div className="p-4 flex items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-sm font-bold text-indigo-700">{p.kode}</span>
+                        <span className="font-mono text-sm font-bold text-orange-700">{p.kode}</span>
                         <Badge className={`text-xs font-medium ${cfg.class}`}>{cfg.label}</Badge>
                         {p.offline_pending && <Badge className="text-xs bg-amber-100 text-amber-700">Offline</Badge>}
                       </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                         <p className="text-sm text-gray-700 font-medium">{p.nama_pelanggan} — {p.perusahaan}</p>
-                        <p className="text-xs text-gray-400">{format(parseISO(p.created_at), 'd MMM yyyy', { locale: idLocale })}</p>
+                        <p className="text-xs text-gray-400">
+                          {p.created_at ? format(parseISO(p.created_at), 'd MMM yyyy', { locale: idLocale }) : '—'}
+                        </p>
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">{p.items.length} produk</p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="font-bold text-gray-900">{formatRupiah(p.total)}</p>
                       <Link to={`/pesanan/${p.kode}`}>
-                        <Button variant="ghost" size="sm" className="gap-1 text-indigo-600 hover:text-indigo-700 mt-1">
+                        <Button variant="ghost" size="sm" className="gap-1 text-orange-600 hover:text-orange-700 mt-1">
                           Detail <ChevronRight className="h-4 w-4" />
                         </Button>
                       </Link>

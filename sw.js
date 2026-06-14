@@ -5,7 +5,7 @@
 //   self.location.pathname = '/tkn/sw.js'  → APP_BASE_PATH = '/tkn/'
 const APP_BASE_PATH = self.location.pathname.substring(0, self.location.pathname.lastIndexOf('/') + 1);
 
-const CACHE_NAME = 'tkn-v1';
+const CACHE_NAME = 'tkn-v2';
 const ASSETS = [
   `${APP_BASE_PATH}`,
   `${APP_BASE_PATH}index.html`,
@@ -21,9 +21,27 @@ self.addEventListener('install', (event) => {
   );
 });
 
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            console.log('Clearing old cache:', cache);
+            return caches.delete(cache);
+          }
+        })
+      );
+    })
+  );
+});
+
 self.addEventListener('fetch', (event) => {
   // Hanya cache request GET
   if (event.request.method !== 'GET') return;
+
+  // Jangan cache request ke API
+  if (event.request.url.includes('/api/')) return;
 
   event.respondWith(
     caches.match(event.request).then((response) => {

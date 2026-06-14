@@ -30,6 +30,28 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     setHasPendingSync(queue.length > 0);
   }, []);
 
+  const triggerSync = useCallback(async () => {
+    if (syncing || !navigator.onLine) return;
+    setSyncing(true);
+    try {
+      await pesananApi.syncOfflinePending();
+      const now = new Date();
+      setLastSynced(now);
+      localStorage.setItem(LAST_SYNCED_KEY, now.toISOString());
+      // Re-check pending after sync
+      const queue = JSON.parse(localStorage.getItem(QUEUE_KEY_PESANAN) || '[]');
+      setHasPendingSync(queue.length > 0);
+      if (queue.length === 0) {
+        toast.success('Semua pesanan offline berhasil disinkronkan.');
+      }
+    } catch (e) {
+      console.error('Sync gagal:', e);
+      toast.error('Gagal menyinkronkan beberapa pesanan.');
+    } finally {
+      setSyncing(false);
+    }
+  }, [syncing]);
+
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
@@ -43,35 +65,17 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     // Initial check
     checkPending();
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [checkPending]);
+  }, [checkPending, triggerSync]);
 
-  const triggerSync = useCallback(async () => {
-    if (syncing || !navigator.onLine) return;
-    setSyncing(true);
-    try {
-      await pesananApi.syncOfflinePending();
-      const now = new Date();
-      setLastSynced(now);
-      localStorage.setItem(LAST_SYNCED_KEY, now.toISOString());
-      checkPending(); // Re-check if everything sent
-      if (!hasPendingSync) {
-        toast.success('Semua pesanan offline berhasil disinkronkan.');
-      }
-    } catch (e) {
-      console.error('Sync gagal:', e);
-      toast.error('Gagal menyinkronkan beberapa pesanan.');
-    } finally {
-      setSyncing(false);
-    }
-  }, [syncing, checkPending, hasPendingSync]);
+
 
   return (
     <OfflineContext.Provider value={{ isOnline, lastSynced, hasPendingSync, triggerSync }}>

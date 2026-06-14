@@ -177,14 +177,14 @@ export default function KatalogPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: '#FFFAF5' }}>
       <Navbar />
 
       {/* Hero */}
-      <div className="bg-gradient-to-r from-indigo-700 to-indigo-600 text-white py-8 px-4">
+      <div className="text-white py-8 px-4" style={{ background: 'linear-gradient(135deg, #1B3A6B 0%, #F97316 60%, #F5A623 100%)' }}>
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold">Katalog Layanan</h1>
-          <p className="text-indigo-200 mt-1 text-sm">Temukan produk terbaik untuk kebutuhan pelanggan Anda</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Katalog Layanan</h1>
+          <p className="text-orange-100 mt-1 text-sm">Temukan produk terbaik untuk kebutuhan pelanggan Anda</p>
           {/* Search Bar */}
           <div className="mt-4 relative max-w-xl">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -193,7 +193,7 @@ export default function KatalogPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Cari layanan, merek, SKU, atau kategori..."
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white text-gray-900 text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white text-gray-900 text-sm shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -208,13 +208,13 @@ export default function KatalogPage() {
         <div className="flex gap-6">
           {/* ── Desktop Filter Sidebar ─────────────────────── */}
           <aside className="hidden lg:block w-56 flex-shrink-0">
-            <div className="bg-white rounded-xl border border-gray-200 p-4 sticky top-24">
+            <div className="bg-white rounded-xl border border-orange-100 p-4 sticky top-24 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <SlidersHorizontal className="h-4 w-4" /> Filter
+                  <SlidersHorizontal className="h-4 w-4 text-orange-500" /> Filter
                 </h2>
                 {activeFilterCount > 0 && (
-                  <Badge className="bg-indigo-100 text-indigo-700 text-xs">{activeFilterCount}</Badge>
+                  <Badge className="bg-orange-100 text-orange-700 text-xs">{activeFilterCount}</Badge>
                 )}
               </div>
               <FilterPanel />
@@ -235,7 +235,7 @@ export default function KatalogPage() {
                   <SlidersHorizontal className="h-4 w-4" />
                   Filter
                   {activeFilterCount > 0 && (
-                    <Badge className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs h-5 min-w-5 flex items-center justify-center rounded-full">
+                    <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs h-5 min-w-5 flex items-center justify-center rounded-full">
                       {activeFilterCount}
                     </Badge>
                   )}
@@ -287,7 +287,7 @@ export default function KatalogPage() {
               <FilterPanel />
             </div>
             <div className="p-4 border-t">
-              <Button onClick={() => setFilterDrawer(false)} className="w-full bg-indigo-600 hover:bg-indigo-700">
+              <Button onClick={() => setFilterDrawer(false)} className="w-full text-white font-bold border-none" style={{ background: 'linear-gradient(135deg, #F5A623, #F97316, #E84E1B)' }}>
                 Tampilkan {filtered.length} Layanan
               </Button>
             </div>
@@ -299,7 +299,8 @@ export default function KatalogPage() {
       {compareItems.length > 0 && (
         <Link
           to="/bandingkan"
-          className="fixed bottom-6 left-6 z-40 flex items-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-full shadow-lg hover:bg-indigo-700 transition-all hover:scale-105"
+          className="fixed bottom-6 left-6 z-40 flex items-center gap-2 text-white px-4 py-3 rounded-full shadow-lg transition-all hover:scale-105 hover:shadow-sunset"
+          style={{ background: 'linear-gradient(135deg, #F5A623, #F97316, #E84E1B)', boxShadow: '0 4px 20px rgba(249,115,22,0.4)' }}
         >
           <ArrowLeftRight className="h-4 w-4" />
           <span className="text-sm font-semibold">Bandingkan ({compareItems.length})</span>

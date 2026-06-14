@@ -1,7 +1,7 @@
 // API Service Layer — E-Catalogue terhubung dengan Backend PHP
 // Semua konfigurasi endpoint dan cache key terpusat di: src/config/env.ts
 
-import type { User, Produk, Kategori, Pesanan, PesananStatus } from '@/types';
+import type { User, Produk, Kategori, Pesanan, PesananStatus, Komisi, KomisiRule, KomisiSummary } from '@/types';
 import {
   API_BASE_URL,
   CACHE_KEY_PRODUK,
@@ -16,11 +16,11 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   // Jika offline dan permintaan adalah GET, coba ambil dari cache
   if (!navigator.onLine && isGet) {
-    if (endpoint.includes('/produk/')) {
+    if (endpoint === ENDPOINTS.produk.aktif || endpoint === ENDPOINTS.produk.index) {
       const cached = localStorage.getItem(CACHE_KEY_PRODUK);
       if (cached) return JSON.parse(cached);
     }
-    if (endpoint.includes('/kategori/')) {
+    if (endpoint === ENDPOINTS.kategori.index) {
       const cached = localStorage.getItem(CACHE_KEY_KATEGORI);
       if (cached) return JSON.parse(cached);
     }
@@ -55,11 +55,11 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
   } catch (err) {
     // Fallback terakhir jika fetch gagal (misal koneksi terputus saat request)
     if (isGet) {
-      if (endpoint.includes('/produk/')) {
+      if (endpoint === ENDPOINTS.produk.aktif || endpoint === ENDPOINTS.produk.index) {
         const cached = localStorage.getItem(CACHE_KEY_PRODUK);
         if (cached) return JSON.parse(cached);
       }
-      if (endpoint.includes('/kategori/')) {
+      if (endpoint === ENDPOINTS.kategori.index) {
         const cached = localStorage.getItem(CACHE_KEY_KATEGORI);
         if (cached) return JSON.parse(cached);
       }
@@ -172,21 +172,28 @@ export const pesananApi = {
   },
 
   async getByUser(salesId: number): Promise<Pesanan[]> {
-    const onlineData = navigator.onLine
-      ? await apiCall<Pesanan[]>(ENDPOINTS.pesanan.bySales(salesId))
-      : [];
-
-    // Gabungkan dengan yang masih di queue offline
+    // Ambil data dari queue offline terlebih dahulu
     const queue = JSON.parse(localStorage.getItem(QUEUE_KEY_PESANAN) || '[]');
-    const offlinePesanan = queue.map((p: any, idx: number) => ({
+    const offlinePesanan: Pesanan[] = queue.map((p: any, idx: number) => ({
       ...p,
       id: -1 - idx,
       kode: p.kode || `OFF-PENDING-${Date.now()}-${idx}`,
-      status: 'draft',
-      created_at: new Date().toISOString(),
+      status: 'draft' as const,
+      created_at: p.created_at || new Date().toISOString(),
+      items: p.items || [],
     }));
 
-    return [...offlinePesanan, ...onlineData];
+    if (!navigator.onLine) {
+      return offlinePesanan;
+    }
+
+    try {
+      const onlineData = await apiCall<Pesanan[]>(ENDPOINTS.pesanan.bySales(salesId));
+      return [...offlinePesanan, ...onlineData];
+    } catch (err) {
+      console.error('Gagal mengambil data pesanan online, tampilkan offline saja:', err);
+      return offlinePesanan;
+    }
   },
 
   async getByKode(kode: string): Promise<Pesanan | undefined> {
@@ -274,5 +281,97 @@ export const userApi = {
       method: 'PUT',
       body: JSON.stringify({ is_aktif: is_aktif ? 1 : 0 }),
     });
+  },
+
+  async updateSales(id: number, data: { nama: string; email: string; telepon: string; wilayah: string }): Promise<User> {
+    return apiCall<User>(ENDPOINTS.users.byId(id), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteSales(id: number): Promise<void> {
+    await apiCall<void>(ENDPOINTS.users.byId(id), { method: 'DELETE' });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// KOMISI API
+// ═══════════════════════════════════════════════════════════════
+export const komisiApi = {
+  async getAll(): Promise<Komisi[]> {
+    return apiCall<Komisi[]>(ENDPOINTS.komisi.index);
+  },
+
+  async getBySales(salesId: number): Promise<Komisi[]> {
+    return apiCall<Komisi[]>(ENDPOINTS.komisi.bySales(salesId));
+  },
+
+  async getById(id: number): Promise<Komisi> {
+    return apiCall<Komisi>(ENDPOINTS.komisi.byId(id));
+  },
+
+  async getSummary(salesId: number): Promise<KomisiSummary> {
+    return apiCall<KomisiSummary>(ENDPOINTS.komisi.summary(salesId));
+  },
+
+  async updateStatus(id: number, status: string, catatan?: string): Promise<void> {
+    await apiCall<void>(ENDPOINTS.komisi.byId(id), {
+      method: 'PUT',
+      body: JSON.stringify({ status, catatan: catatan ?? null }),
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// KOMISI RULES API
+// ═══════════════════════════════════════════════════════════════
+export const komisiRulesApi = {
+  async getAll(): Promise<KomisiRule[]> {
+    return apiCall<KomisiRule[]>(ENDPOINTS.komisi.rules);
+  },
+
+  async create(data: Omit<KomisiRule, 'id' | 'created_at' | 'kategori_nama'>): Promise<KomisiRule> {
+    return apiCall<KomisiRule>(ENDPOINTS.komisi.rules, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: number, data: Partial<KomisiRule>): Promise<void> {
+    await apiCall<void>(ENDPOINTS.komisi.ruleById(id), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: number): Promise<void> {
+    await apiCall<void>(ENDPOINTS.komisi.ruleById(id), { method: 'DELETE' });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD API
+// ═══════════════════════════════════════════════════════════════
+
+export interface DashboardStats {
+  total_produk_aktif: number;
+  total_pesanan: number;
+  pesanan_by_status: Record<string, number>;
+  pesanan_hari_ini: number;
+  total_sales_aktif: number;
+  total_komisi_pending: number;
+  total_kategori: number;
+  pesanan_per_bulan: { bulan: string; jumlah: number; nilai: number }[];
+  top_produk: { nama: string; sku: string; total_qty: number; total_nilai: number }[];
+  tahun: number;
+}
+
+export const dashboardApi = {
+  async getStats(year?: number): Promise<DashboardStats> {
+    const endpoint = year
+      ? ENDPOINTS.dashboard.byYear(year)
+      : ENDPOINTS.dashboard.index;
+    return apiCall<DashboardStats>(endpoint);
   },
 };

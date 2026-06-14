@@ -1,12 +1,14 @@
 <IfModule mod_rewrite.c>
+  DirectoryIndex dist/index.html
   RewriteEngine On
-  RewriteBase /
+  RewriteBase /tkn/
 
   # ── [PENTING] Biarkan request ke /api/ diproses PHP langsung ──
   RewriteRule ^api/ - [L]
 
   # ── Arahkan root request ke React SPA ─────────────────────────
-  RewriteRule ^$ index.html [L]
+  RewriteRule ^$ dist/index.html [L]
+  RewriteRule ^index\.html$ dist/index.html [L]
 
   # ── Layani aset statis (js, css, images, fonts) ────────────────
   RewriteCond %{REQUEST_FILENAME} -f
@@ -15,7 +17,7 @@
   # ── Semua route lain → React Router (SPA fallback) ────────────
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^(.*)$ index.html [L]
+  RewriteRule ^(.*)$ dist/index.html [L]
 
 </IfModule>
 

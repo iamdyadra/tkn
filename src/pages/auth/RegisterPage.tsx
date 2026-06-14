@@ -48,16 +48,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-2xl mb-3">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, #0C1730 0%, #1B3A6B 35%, #C2410C 75%, #F97316 100%)' }}>
+      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 20% 90%, rgba(249,115,22,0.2) 0%, transparent 60%)' }} />
+      <div className="w-full max-w-md relative z-10">
+        <div className="bg-white rounded-2xl shadow-2xl border border-orange-100/50 overflow-hidden">
+          {/* Header — sunset gradient */}
+          <div className="px-8 py-6 text-center" style={{ background: 'linear-gradient(135deg, #F5A623 0%, #F97316 50%, #E84E1B 100%)' }}>
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-2xl mb-3 backdrop-blur-sm">
               <Map className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-white">Daftar Akun TKN</h1>
-            <p className="text-indigo-200 text-sm mt-0.5">TKN Travel — E-Catalogue</p>
+            <h1 className="text-xl font-extrabold text-white tracking-tight">Daftar Akun TKN</h1>
+            <p className="text-orange-100 text-sm mt-0.5 font-medium">TKN Travel — E-Catalogue</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="px-8 py-6 space-y-4">
@@ -117,7 +118,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2 h-10 mt-2">
+            <Button type="submit" disabled={loading} className="w-full gap-2 h-10 mt-2 font-bold text-white border-none transition-all hover:scale-[1.02]" style={{ background: 'linear-gradient(135deg, #F5A623, #F97316, #E84E1B)', boxShadow: '0 4px 20px rgba(249,115,22,0.35)' }}>
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
@@ -130,7 +131,7 @@ export default function RegisterPage() {
 
             <p className="text-center text-sm text-gray-500">
               Sudah punya akun?{' '}
-              <Link to="/login" className="text-indigo-600 font-medium hover:underline">
+              <Link to="/login" className="text-orange-600 font-medium hover:underline">
                 Masuk di sini
               </Link>
             </p>

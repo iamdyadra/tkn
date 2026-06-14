@@ -23,7 +23,7 @@ function getDiskonPersen(normal: number, promo: number) {
 function getStokColor(stok: number) {
   if (stok === 0) return 'text-red-600';
   if (stok <= 5) return 'text-amber-600';
-  return 'text-emerald-600';
+  return 'text-tkn-navy';
 }
 
 export default function ProductCard({ produk }: Props) {
@@ -54,7 +54,7 @@ export default function ProductCard({ produk }: Props) {
   };
 
   return (
-    <div className="group bg-white rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+    <div className="group bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
       {/* ── Foto ─────────────────────────────────────────── */}
       <Link to={`/katalog/${produk.id}`} className="relative block aspect-[4/3] overflow-hidden bg-gray-100">
         <img
@@ -69,7 +69,7 @@ export default function ProductCard({ produk }: Props) {
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {produk.is_promo && !habis && (
-            <Badge className="bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 shadow">
+            <Badge className="text-white text-xs font-black px-2.5 py-0.5 shadow-lg border-none" style={{ background: 'linear-gradient(135deg, #F5A623, #F97316)' }}>
               PROMO {getDiskonPersen(produk.harga_normal, produk.harga_promo!)}%
             </Badge>
           )}
@@ -82,8 +82,8 @@ export default function ProductCard({ produk }: Props) {
           onClick={handleCompare}
           className={`absolute top-2 right-2 rounded-full w-8 h-8 flex items-center justify-center transition-all shadow ${
             inCompare
-              ? 'bg-indigo-600 text-white'
-              : 'bg-white/80 text-gray-600 opacity-0 group-hover:opacity-100 hover:bg-indigo-50'
+              ? 'bg-orange-600 text-white'
+              : 'bg-white/80 text-gray-600 opacity-0 group-hover:opacity-100 hover:bg-orange-50'
           }`}
           title={inCompare ? 'Hapus dari perbandingan' : 'Tambah ke perbandingan'}
         >
@@ -96,12 +96,12 @@ export default function ProductCard({ produk }: Props) {
         {/* Kategori + Merek */}
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{produk.kategori_nama}</span>
-          <span className="text-xs text-indigo-600 font-medium">{produk.merek}</span>
+          <span className="text-xs text-orange-600 font-medium">{produk.merek}</span>
         </div>
 
         {/* Nama */}
         <Link to={`/katalog/${produk.id}`}>
-          <h3 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 hover:text-indigo-700 transition-colors">
+          <h3 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 hover:text-orange-700 transition-colors">
             {produk.nama}
           </h3>
         </Link>
@@ -111,7 +111,7 @@ export default function ProductCard({ produk }: Props) {
           {produk.is_promo && produk.harga_promo ? (
             <div>
               <p className="text-xs text-gray-400 line-through leading-none">{formatRupiah(produk.harga_normal)}</p>
-              <p className="text-base font-bold text-emerald-600">{formatRupiah(produk.harga_promo)}</p>
+              <p className="text-base font-bold text-tkn-orange">{formatRupiah(produk.harga_promo)}</p>
             </div>
           ) : (
             <p className="text-base font-bold text-gray-900">{formatRupiah(produk.harga_normal)}</p>
@@ -137,11 +137,12 @@ export default function ProductCard({ produk }: Props) {
             size="sm"
             onClick={handleAddCart}
             disabled={habis}
-            className={`flex-1 gap-1.5 text-xs ${
+            className={`flex-1 gap-1.5 text-xs font-semibold text-white border-none transition-all ${
               inCart
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                ? 'bg-tkn-navy hover:opacity-90'
+                : ''
             }`}
+            style={!inCart && !habis ? { background: 'linear-gradient(135deg, #F5A623, #F97316)' } : undefined}
           >
             <ShoppingCart className="h-3.5 w-3.5" />
             {inCart ? 'Ditambah' : '+ Pesanan'}

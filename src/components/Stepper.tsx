@@ -52,21 +52,24 @@ export default function Stepper({ currentStatus }: Props) {
               {/* Connector line */}
               {idx < STEPS.length - 1 && (
                 <div className="absolute left-1/2 top-4 h-0.5 w-full z-0">
-                  <div className={cn('h-full', isDone ? 'bg-indigo-600' : 'bg-gray-200')} />
+                  <div className={cn('h-full transition-all', isDone ? 'bg-gradient-to-r from-orange-500 to-amber-400' : 'bg-gray-200')} />
                 </div>
               )}
 
               {/* Circle */}
-              <div className={cn(
-                'relative z-10 w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all',
-                isDone ? 'bg-indigo-600 border-indigo-600' :
-                isCurrent ? 'bg-white border-indigo-600 ring-4 ring-indigo-100' :
-                'bg-white border-gray-300'
-              )}>
+              <div
+                className={cn(
+                  'relative z-10 w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300',
+                  isDone ? 'border-orange-500' :
+                  isCurrent ? 'bg-white border-orange-500 ring-4 ring-orange-100' :
+                  'bg-white border-gray-300'
+                )}
+                style={isDone ? { background: 'linear-gradient(135deg, #F5A623, #F97316)' } : undefined}
+              >
                 {isDone ? (
                   <Check className="h-4 w-4 text-white" />
                 ) : (
-                  <span className={cn('text-xs font-bold', isCurrent ? 'text-indigo-600' : 'text-gray-400')}>
+                  <span className={cn('text-xs font-bold', isCurrent ? 'text-orange-600' : 'text-gray-400')}>
                     {idx + 1}
                   </span>
                 )}
@@ -74,7 +77,7 @@ export default function Stepper({ currentStatus }: Props) {
 
               {/* Label */}
               <div className="mt-2 text-center px-1">
-                <p className={cn('text-xs font-semibold leading-none', isDone || isCurrent ? 'text-indigo-700' : 'text-gray-400')}>
+                <p className={cn('text-xs font-semibold leading-none', isDone || isCurrent ? 'text-orange-700' : 'text-gray-400')}>
                   {step.label}
                 </p>
                 <p className={cn('text-xs mt-0.5 hidden sm:block', isPending ? 'text-gray-300' : 'text-gray-500')}>

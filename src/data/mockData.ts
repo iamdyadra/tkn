@@ -53,6 +53,71 @@ export const mockProduk: Produk[] = [
     is_promo: true, promo_mulai: '2025-01-01', promo_selesai: '2026-12-31', is_aktif: true, created_at: '2025-01-10'
   },
   {
+    id: 17, nama: 'Paket Tour Jogja–Solo–Bromo 4 Hari 3 Malam', sku: 'TRV-002', merek: 'TKN Tour',
+    kategori_id: 1, kategori_nama: 'Tour',
+    deskripsi: 'Eksplorasi keindahan budaya dan alam Jawa! Jelajahi Prambanan, Borobudur, Keraton Solo, dan saksikan matahari terbit spektakuler di Gunung Bromo. Hotel bintang 3–4, transportasi AC, pemandu profesional.',
+    spesifikasi: [
+      { key: 'Durasi', value: '4 Hari 3 Malam' },
+      { key: 'Destinasi', value: 'Jogja, Solo, Bromo' },
+      { key: 'Include', value: 'Hotel, Makan, Guide, Transportasi' },
+    ],
+    harga_normal: 4200000, harga_promo: 3350000, stok: 40,
+    foto_urls: ['https://images.unsplash.com/photo-1588668214407-6ea9a6d8f3b8?auto=format&fit=crop&q=80'],
+    is_promo: true, promo_mulai: '2026-05-01', promo_selesai: '2026-08-31', is_aktif: true, created_at: '2026-05-01'
+  },
+  {
+    id: 18, nama: 'Tiket Pesawat JKT–LABUAN BAJO (PP)', sku: 'FLT-003', merek: 'TKN Flight',
+    kategori_id: 2, kategori_nama: 'Flight',
+    deskripsi: 'Dapatkan e-ticket pesawat rute Jakarta (CGK) menuju Labuan Bajo (LBJ) pulang-pergi dengan harga spesial. Nikmati keindahan Komodo dan Pulau Padar dengan penerbangan langsung.',
+    spesifikasi: [
+      { key: 'Rute', value: 'Jakarta (CGK) ⇄ Labuan Bajo (LBJ)' },
+      { key: 'Bagasi', value: '20 Kg' },
+      { key: 'E-Ticket', value: 'Dikirim H+1 Kerja' },
+    ],
+    harga_normal: 2800000, harga_promo: 1990000, stok: 60,
+    foto_urls: ['https://images.unsplash.com/photo-1569913486515-b74bf7751574?auto=format&fit=crop&q=80'],
+    is_promo: true, promo_mulai: '2026-06-01', promo_selesai: '2026-07-31', is_aktif: true, created_at: '2026-06-01'
+  },
+  {
+    id: 19, nama: 'Paket Outbound Family Fun Day', sku: 'OUT-002', merek: 'TKN Outbound',
+    kategori_id: 3, kategori_nama: 'Outbound',
+    deskripsi: 'Paket outbound spesial keluarga dan komunitas! Tersedia berbagai permainan seru (flying fox, water games, paintball) di resort alam terbuka Bogor. Cocok untuk gathering RT, arisan, hingga ulang tahun anak.',
+    spesifikasi: [
+      { key: 'Jumlah Peserta', value: 'Min. 20 Orang' },
+      { key: 'Durasi', value: '1 Hari (07.00–17.00)' },
+      { key: 'Fasilitas', value: 'Makan Siang, Snack, Trainer, Dokumentasi' },
+    ],
+    harga_normal: 550000, harga_promo: 399000, stok: 80,
+    foto_urls: ['https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80'],
+    is_promo: true, promo_mulai: '2026-06-01', promo_selesai: '2026-09-30', is_aktif: true, created_at: '2026-06-01'
+  },
+  {
+    id: 20, nama: 'Sewa Alphard Mewah – Supir Termasuk', sku: 'RNT-002', merek: 'TKN Rent Car',
+    kategori_id: 10, kategori_nama: 'Rent Car',
+    deskripsi: 'Tampil elegan dan nyaman bersama keluarga atau rekan bisnis dengan Toyota Alphard premium. Cocok untuk airport transfer, perjalanan VIP, atau wisata dalam kota. Supir profesional dan berpengalaman.',
+    spesifikasi: [
+      { key: 'Seat', value: '6 Penumpang (Captain Seat)' },
+      { key: 'Waktu Sewa', value: '12 Jam' },
+      { key: 'Supir', value: 'Profesional Termasuk' },
+    ],
+    harga_normal: 1800000, harga_promo: 1350000, stok: 8,
+    foto_urls: ['https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&q=80'],
+    is_promo: true, promo_mulai: '2026-06-01', promo_selesai: '2026-12-31', is_aktif: true, created_at: '2026-06-01'
+  },
+  {
+    id: 21, nama: 'Paket Umroh Hemat Reguler 9 Hari', sku: 'UMR-005', merek: 'TKN Umroh',
+    kategori_id: 6, kategori_nama: 'Umroh',
+    deskripsi: 'Spesial Early Bird! Paket umroh reguler 9 hari dengan fasilitas hotel bintang 4 dekat Masjidil Haram dan Masjid Nabawi. Didampingi muthawif berpengalaman dan asuransi perjalanan penuh.',
+    spesifikasi: [
+      { key: 'Transport/Flight', value: 'Direct Landing Jeddah' },
+      { key: 'Hotel', value: 'Bintang 4 (±200m Haram)' },
+      { key: 'Fasilitas', value: 'Makan 3x, Visa, Muthawif, Asuransi' },
+    ],
+    harga_normal: 28500000, harga_promo: 24900000, stok: 30,
+    foto_urls: ['https://images.unsplash.com/photo-1565552643983-6cc379aa6e64?auto=format&fit=crop&q=80'],
+    is_promo: true, promo_mulai: '2026-06-01', promo_selesai: '2026-09-30', is_aktif: true, created_at: '2026-06-01'
+  },
+  {
     id: 2, nama: 'Tiket Pesawat JKT-BALI (PP)', sku: 'FLT-001', merek: 'TKN Flight',
     kategori_id: 2, kategori_nama: 'Flight',
     deskripsi: 'Pemesanan e-ticket pesawat rute Jakarta (CGK) menuju Denpasar (DPS) Pulang-Pergi menggunakan maskapai komersial full-service.',

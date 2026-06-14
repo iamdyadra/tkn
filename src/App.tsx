@@ -28,6 +28,7 @@ import BuatPesananPage from '@/pages/pesanan/BuatPesananPage';
 import RiwayatPesananPage from '@/pages/pesanan/RiwayatPesananPage';
 import DetailPesananPage from '@/pages/pesanan/DetailPesananPage';
 import PromoPage from '@/pages/promo/PromoPage';
+import KomisiPage from '@/pages/komisi/KomisiPage';
 
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
@@ -36,6 +37,7 @@ import AdminKategoriPage from '@/pages/admin/AdminKategoriPage';
 import AdminPesananPage from '@/pages/admin/AdminPesananPage';
 import AdminSalesPage from '@/pages/admin/AdminSalesPage';
 import AdminLaporanPage from '@/pages/admin/AdminLaporanPage';
+import AdminKomisiPage from '@/pages/admin/AdminKomisiPage';
 import HomePage from '@/pages/HomePage';
 
 import NotFound from '@/pages/NotFound';
@@ -70,6 +72,7 @@ const App = () => (
                   <Route path="/pesanan/riwayat" element={<SalesRoute><RiwayatPesananPage /></SalesRoute>} />
                   <Route path="/pesanan/:kode" element={<SalesRoute><DetailPesananPage /></SalesRoute>} />
                   <Route path="/promo" element={<SalesRoute><PromoPage /></SalesRoute>} />
+                  <Route path="/komisi" element={<SalesRoute><KomisiPage /></SalesRoute>} />
 
                   {/* Admin Routes */}
                   <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
@@ -77,6 +80,7 @@ const App = () => (
                     <Route path="produk" element={<AdminProdukPage />} />
                     <Route path="kategori" element={<AdminKategoriPage />} />
                     <Route path="pesanan" element={<AdminPesananPage />} />
+                    <Route path="komisi" element={<AdminKomisiPage />} />
                     <Route path="sales" element={<AdminSalesPage />} />
                     <Route path="laporan" element={<AdminLaporanPage />} />
                   </Route>

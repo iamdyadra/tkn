@@ -1,6 +1,7 @@
 // AdminPesananPage — kelola semua pesanan dengan update status
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { pesananApi, userApi } from '@/lib/api';
 import type { Pesanan, PesananStatus, User } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ const NEXT_STATUS: Record<PesananStatus, PesananStatus | null> = {
 };
 
 export default function AdminPesananPage() {
+  const queryClient = useQueryClient();
   const [pesanan, setPesanan] = useState<Pesanan[]>([]);
   const [salesList, setSalesList] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,6 +73,12 @@ export default function AdminPesananPage() {
       await pesananApi.updateStatus(confirmDialog.pesanan.id, confirmDialog.toStatus);
       toast.success(`Status diperbarui ke ${STATUS_CONFIG[confirmDialog.toStatus].label}`);
       setConfirmDialog(null);
+      
+      // Invalidate queries so commission pages update automatically
+      queryClient.invalidateQueries({ queryKey: ['komisi'] });
+      queryClient.invalidateQueries({ queryKey: ['komisi-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-komisi'] });
+      
       load();
     } catch { toast.error('Gagal memperbarui status'); }
     finally { setUpdatingId(null); }
@@ -87,6 +95,12 @@ export default function AdminPesananPage() {
       await pesananApi.delete(deleteConfirm.id);
       toast.success('Pesanan berhasil dihapus');
       setDeleteConfirm(null);
+      
+      // Invalidate queries so commission pages update automatically
+      queryClient.invalidateQueries({ queryKey: ['komisi'] });
+      queryClient.invalidateQueries({ queryKey: ['komisi-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-komisi'] });
+      
       load();
     } catch {
       toast.error('Gagal menghapus pesanan');
@@ -99,7 +113,7 @@ export default function AdminPesananPage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-indigo-600" />
+          <ClipboardList className="h-5 w-5 text-orange-600" />
           Manajemen Pesanan
         </h1>
         <p className="text-sm text-gray-500">{pesanan.length} total pesanan</p>
@@ -154,7 +168,7 @@ export default function AdminPesananPage() {
               return (
                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                   <td className="py-3 px-4">
-                    <Link to={`/pesanan/${p.kode}`} className="font-mono text-xs text-indigo-700 hover:underline">{p.kode}</Link>
+                    <Link to={`/pesanan/${p.kode}`} className="font-mono text-xs text-orange-700 hover:underline">{p.kode}</Link>
                   </td>
                   <td className="py-3 px-4 text-gray-700">{p.sales_nama}</td>
                   <td className="py-3 px-4">
@@ -175,7 +189,7 @@ export default function AdminPesananPage() {
                           size="sm"
                           onClick={() => setConfirmDialog({ pesanan: p, toStatus: next })}
                           disabled={updatingId === p.id}
-                          className="text-xs h-7 bg-indigo-600 hover:bg-indigo-700 px-2"
+                          className="text-xs h-7 bg-orange-600 hover:bg-orange-700 px-2"
                         >
                           → {STATUS_CONFIG[next].label}
                         </Button>
@@ -235,7 +249,7 @@ export default function AdminPesananPage() {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleUpdateStatus}
-              className={confirmDialog?.toStatus === 'dibatalkan' ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}
+              className={confirmDialog?.toStatus === 'dibatalkan' ? 'bg-red-600 hover:bg-red-700' : 'bg-orange-600 hover:bg-orange-700'}
             >
               Konfirmasi
             </AlertDialogAction>

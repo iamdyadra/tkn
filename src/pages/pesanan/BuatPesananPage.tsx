@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useQueryClient } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +35,7 @@ export default function BuatPesananPage() {
   const { items, removeItem, updateQty, clearCart, totalHarga } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
   const [successKode, setSuccessKode] = useState('');
 
@@ -69,6 +71,11 @@ export default function BuatPesananPage() {
 
       setSuccessKode(pesanan.kode);
       clearCart();
+      
+      // Invalidate queries so commission pages update automatically
+      queryClient.invalidateQueries({ queryKey: ['komisi'] });
+      queryClient.invalidateQueries({ queryKey: ['komisi-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-komisi'] });
     } catch (e) {
       console.error(e);
       toast.error('Gagal membuat pesanan. Coba lagi.');
@@ -80,12 +87,12 @@ export default function BuatPesananPage() {
   // Success state
   if (successKode) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen" style={{ background: '#FFFAF5' }}>
         <Navbar />
         <div className="max-w-lg mx-auto px-4 py-20 text-center space-y-4">
           <div className="flex justify-center">
-            <div className="bg-emerald-100 rounded-full p-6">
-              <CheckCircle className="h-16 w-16 text-emerald-600" />
+            <div className="rounded-full p-6" style={{ background: 'linear-gradient(135deg, #FFF7ED, #FED7AA)' }}>
+              <CheckCircle className="h-16 w-16 text-tkn-orange" />
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-900">
@@ -96,8 +103,8 @@ export default function BuatPesananPage() {
               ? 'Koneksi terputus. Pesanan Anda disimpan lokal dan akan dikirim saat online.' 
               : 'Pesanan Anda telah dibuat dengan kode:'}
           </p>
-          <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4">
-            <p className="text-2xl font-mono font-bold text-indigo-700">{successKode}</p>
+          <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4">
+            <p className="text-2xl font-mono font-bold text-orange-700">{successKode}</p>
           </div>
           <p className="text-sm text-gray-500">
             {successKode.startsWith('OFFLINE-')
@@ -105,10 +112,10 @@ export default function BuatPesananPage() {
               : 'Catat kode ini untuk tracking status pesanan Anda'}
           </p>
           <div className="flex gap-3 justify-center pt-2">
-            <Button variant="outline" onClick={() => navigate('/katalog')} className="gap-2">
+            <Button variant="outline" onClick={() => navigate('/katalog')} className="gap-2 border-orange-200 text-orange-700 hover:bg-orange-50">
               <ArrowLeft className="h-4 w-4" /> Ke Katalog
             </Button>
-            <Button onClick={() => navigate('/pesanan/riwayat')} className="bg-indigo-600 hover:bg-indigo-700 gap-2">
+            <Button onClick={() => navigate('/pesanan/riwayat')} className="gap-2 text-white border-none font-bold" style={{ background: 'linear-gradient(135deg, #F5A623, #F97316)' }}>
               Lihat Riwayat Pesanan
             </Button>
           </div>
@@ -123,11 +130,11 @@ export default function BuatPesananPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center gap-3 mb-6">
-          <Link to="/katalog" className="text-indigo-600 hover:underline flex items-center gap-1 text-sm">
+          <Link to="/katalog" className="text-orange-600 hover:underline flex items-center gap-1 text-sm">
             <ArrowLeft className="h-4 w-4" /> Katalog
           </Link>
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5 text-indigo-600" /> Buat Pesanan
+            <ShoppingCart className="h-5 w-5 text-orange-600" /> Buat Pesanan
           </h1>
         </div>
 
@@ -137,7 +144,7 @@ export default function BuatPesananPage() {
             <h2 className="text-lg font-semibold text-gray-600">Pesanan masih kosong</h2>
             <p className="text-gray-400 text-sm mt-1">Tambahkan layanan dari katalog</p>
             <Link to="/katalog">
-              <Button className="mt-6 bg-indigo-600 hover:bg-indigo-700">Ke Katalog</Button>
+              <Button className="mt-6 text-white font-bold border-none" style={{ background: 'linear-gradient(135deg, #F5A623, #F97316)' }}>Ke Katalog</Button>
             </Link>
           </div>
         ) : (
@@ -158,10 +165,10 @@ export default function BuatPesananPage() {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-gray-900 line-clamp-2">{produk.nama}</p>
                             <p className="text-xs text-gray-500">{produk.merek} · {produk.sku}</p>
-                            <p className="text-sm font-bold text-indigo-700 mt-1">{formatRupiah(harga)}/unit</p>
+                            <p className="text-sm font-bold text-orange-700 mt-1">{formatRupiah(harga)}/unit</p>
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <button onClick={() => removeItem(produk.id)} className="text-red-400 hover:text-red-600">
+                            <button type="button" onClick={() => removeItem(produk.id)} className="text-red-400 hover:text-red-600">
                               <Trash2 className="h-4 w-4" />
                             </button>
                             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
@@ -234,12 +241,13 @@ export default function BuatPesananPage() {
                   <Separator />
                   <div className="flex justify-between font-bold text-gray-900">
                     <span>Total</span>
-                    <span className="text-indigo-700 text-lg">{formatRupiah(totalHarga)}</span>
+                    <span className="text-orange-700 text-lg">{formatRupiah(totalHarga)}</span>
                   </div>
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 h-11 text-base gap-2"
+                    className="w-full h-11 text-base gap-2 font-bold text-white border-none transition-all hover:scale-[1.01]"
+                    style={{ background: 'linear-gradient(135deg, #F5A623, #F97316, #E84E1B)', boxShadow: '0 4px 20px rgba(249,115,22,0.35)' }}
                   >
                     {submitting ? (
                       <span className="flex items-center gap-2">

@@ -53,7 +53,7 @@ export default function DetailProdukPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin h-10 w-10 rounded-full border-4 border-indigo-600 border-t-transparent" />
+        <div className="animate-spin h-10 w-10 rounded-full border-4 border-orange-600 border-t-transparent" />
       </div>
     </div>
   );
@@ -95,7 +95,7 @@ export default function DetailProdukPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Link to="/katalog" className="hover:text-indigo-600 flex items-center gap-1">
+          <Link to="/katalog" className="hover:text-orange-600 flex items-center gap-1">
             <ArrowLeft className="h-4 w-4" /> Katalog
           </Link>
           <span>/</span>
@@ -120,7 +120,7 @@ export default function DetailProdukPage() {
                   key={i}
                   onClick={() => setActivePhoto(i)}
                   className={`flex-1 aspect-square rounded-lg border-2 overflow-hidden transition-all ${
-                    activePhoto === i ? 'border-indigo-500 shadow-md' : 'border-gray-200 hover:border-gray-300'
+                    activePhoto === i ? 'border-orange-500 shadow-md' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <img src={url || 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80'} onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80'; }} alt="" className="w-full h-full object-cover" />
@@ -144,7 +144,7 @@ export default function DetailProdukPage() {
 
             {/* Nama & Merek */}
             <div>
-              <p className="text-sm text-indigo-600 font-medium">{produk.merek}</p>
+              <p className="text-sm text-orange-600 font-medium">{produk.merek}</p>
               <h1 className="text-2xl font-bold text-gray-900 mt-1 leading-tight">{produk.nama}</h1>
             </div>
 
@@ -196,7 +196,7 @@ export default function DetailProdukPage() {
               <Button
                 onClick={handleAddCart}
                 disabled={habis}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 gap-2 h-11"
+                className="flex-1 bg-orange-600 hover:bg-orange-700 gap-2 h-11"
               >
                 <ShoppingCart className="h-4 w-4" />
                 {habis ? 'Stok Habis' : 'Tambah ke Pesanan'}
@@ -204,7 +204,7 @@ export default function DetailProdukPage() {
               <Button
                 variant="outline"
                 onClick={handleCompare}
-                className={`gap-2 h-11 ${inCompare ? 'border-indigo-500 text-indigo-700 bg-indigo-50' : ''}`}
+                className={`gap-2 h-11 ${inCompare ? 'border-orange-500 text-orange-700 bg-orange-50' : ''}`}
               >
                 <ArrowLeftRight className="h-4 w-4" />
                 {inCompare ? 'Dibandingkan' : 'Bandingkan'}
@@ -230,7 +230,7 @@ export default function DetailProdukPage() {
           </div>
           <button
             onClick={() => setDescExpanded(!descExpanded)}
-            className="flex items-center gap-1 text-indigo-600 text-sm font-medium mt-2 hover:underline"
+            className="flex items-center gap-1 text-orange-600 text-sm font-medium mt-2 hover:underline"
           >
             {descExpanded ? <><ChevronUp className="h-4 w-4" /> Sembunyikan</> : <><ChevronDown className="h-4 w-4" /> Selengkapnya</>}
           </button>

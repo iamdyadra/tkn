@@ -1,98 +1,142 @@
-// AdminKategoriPage — CRUD kategori produk
-import { useState, useEffect } from 'react';
+// AdminKategoriPage — CRUD kategori dengan TanStack Query
+// Spec: ikon = input text nama Lucide, warna = input text class Tailwind
+// Delete: alert tampilkan jumlah produk, cascade via ON DELETE CASCADE
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Pencil, Trash2, Tag } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, AlertTriangle } from 'lucide-react';
 import { kategoriApi, produkApi } from '@/lib/api';
 import type { Kategori } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Cpu, Briefcase, Armchair, Package, Network, Shield } from 'lucide-react';
-
-const IKON_OPTIONS = ['Cpu', 'Briefcase', 'Armchair', 'Package', 'Network', 'Shield', 'Tag', 'Box', 'Monitor'];
-const WARNA_OPTIONS = ['indigo', 'blue', 'amber', 'emerald', 'purple', 'red', 'pink', 'orange'];
-
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Cpu, Briefcase, Armchair, Package, Network, Shield, Tag,
-};
 
 const schema = z.object({
-  nama: z.string().min(2, 'Nama minimal 2 karakter'),
-  ikon: z.string().min(1),
-  warna: z.string().min(1),
+  nama:     z.string().min(2, 'Nama minimal 2 karakter'),
+  ikon:     z.string().min(1, 'Ikon wajib diisi (nama Lucide, contoh: map, plane, hotel)'),
+  warna:    z.string().min(1, 'Warna wajib diisi (class Tailwind, contoh: bg-blue-500)'),
   deskripsi: z.string().optional(),
 });
 type FormData = z.infer<typeof schema>;
 
 export default function AdminKategoriPage() {
-  const [kategori, setKategori] = useState<Kategori[]>([]);
-  const [produkCount, setProdukCount] = useState<Record<number, number>>({});
-  const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteDialog, setDeleteDialog] = useState<Kategori | null>(null);
-  const [editKat, setEditKat] = useState<Kategori | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const [modalOpen, setModalOpen]   = useState(false);
+  const [editKat, setEditKat]       = useState<Kategori | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Kategori | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: { ikon: 'Tag', warna: 'indigo' },
+  // ── Queries ──────────────────────────────────────────────────
+  const { data: kategori = [], isLoading } = useQuery({
+    queryKey: ['kategori'],
+    queryFn: () => kategoriApi.getAll(),
   });
 
-  const selectedWarna = watch('warna');
-  const selectedIkon = watch('ikon');
+  const { data: produk = [] } = useQuery({
+    queryKey: ['produk-admin'],
+    queryFn: () => produkApi.getAllAdmin(),
+  });
 
-  useEffect(() => { load(); }, []);
+  // Hitung produk per kategori
+  const produkCount: Record<number, number> = {};
+  produk.forEach(p => {
+    produkCount[p.kategori_id] = (produkCount[p.kategori_id] ?? 0) + 1;
+  });
 
-  const load = async () => {
-    const [k, p] = await Promise.all([kategoriApi.getAll(), produkApi.getAllAdmin()]);
-    setKategori(k);
-    const counts: Record<number, number> = {};
-    p.forEach(pr => { counts[pr.kategori_id] = (counts[pr.kategori_id] ?? 0) + 1; });
-    setProdukCount(counts);
-    setLoading(false);
-  };
+  // Jumlah produk di kategori yang hendak dihapus
+  const deleteTargetProdukCount = deleteTarget ? (produkCount[deleteTarget.id] ?? 0) : 0;
 
+  // ── Form ─────────────────────────────────────────────────────
+  const {
+    register, handleSubmit, reset, watch,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { ikon: 'tag', warna: 'bg-blue-500', deskripsi: '' },
+  });
+
+  const warnaWatch = watch('warna');
+  const ikonWatch  = watch('ikon');
+
+  // ── Mutations ────────────────────────────────────────────────
+  const createMutation = useMutation({
+    mutationFn: (data: Omit<Kategori, 'id' | 'created_at'>) => kategoriApi.create(data),
+    onSuccess: () => {
+      toast.success('Kategori berhasil ditambahkan');
+      qc.invalidateQueries({ queryKey: ['kategori'] });
+      setModalOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message ?? 'Gagal menambahkan kategori'),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<Kategori> }) => kategoriApi.update(id, data),
+    onSuccess: () => {
+      toast.success('Kategori berhasil diperbarui');
+      qc.invalidateQueries({ queryKey: ['kategori'] });
+      setModalOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message ?? 'Gagal memperbarui kategori'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => kategoriApi.delete(id),
+    onSuccess: (_, _id) => {
+      const count = deleteTargetProdukCount;
+      toast.success(
+        count > 0
+          ? `Kategori beserta ${count} produk berhasil dihapus`
+          : 'Kategori berhasil dihapus'
+      );
+      qc.invalidateQueries({ queryKey: ['kategori'] });
+      qc.invalidateQueries({ queryKey: ['produk-admin'] });
+      setDeleteOpen(false);
+      setDeleteTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message ?? 'Gagal menghapus kategori');
+      setDeleteOpen(false);
+    },
+  });
+
+  // ── Handlers ─────────────────────────────────────────────────
   const openAdd = () => {
     setEditKat(null);
-    reset({ ikon: 'Tag', warna: 'indigo', nama: '', deskripsi: '' });
+    reset({ ikon: 'tag', warna: 'bg-blue-500', nama: '', deskripsi: '' });
     setModalOpen(true);
   };
 
   const openEdit = (k: Kategori) => {
     setEditKat(k);
-    reset({ nama: k.nama, ikon: k.ikon, warna: k.warna, deskripsi: k.deskripsi });
+    reset({ nama: k.nama, ikon: k.ikon, warna: k.warna, deskripsi: k.deskripsi ?? '' });
     setModalOpen(true);
   };
 
-  const onSubmit = async (data: FormData) => {
-    setSubmitting(true);
-    try {
-      if (editKat) {
-        await kategoriApi.update(editKat.id, { ...data, deskripsi: data.deskripsi ?? '' } as Partial<Kategori>);
-        toast.success('Kategori berhasil diperbarui');
-      } else {
-        await kategoriApi.create({ ...data, deskripsi: data.deskripsi ?? '' } as Omit<Kategori, 'id' | 'created_at'>);
-        toast.success('Kategori berhasil ditambahkan');
-      }
-      setModalOpen(false);
-      load();
-    } catch { toast.error('Gagal menyimpan kategori'); }
-    finally { setSubmitting(false); }
+  const onSubmit = (data: FormData) => {
+    const payload = {
+      nama:      data.nama,
+      ikon:      data.ikon,
+      warna:     data.warna,
+      deskripsi: data.deskripsi ?? '',
+    };
+    if (editKat) {
+      updateMutation.mutate({ id: editKat.id, data: payload });
+    } else {
+      createMutation.mutate(payload);
+    }
   };
 
-  const handleDelete = async () => {
-    if (!deleteDialog) return;
-    await kategoriApi.delete(deleteDialog.id);
-    toast.success('Kategori dihapus');
-    setDeleteDialog(null);
-    load();
-  };
+  const isMutating = createMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="space-y-5">
@@ -101,124 +145,213 @@ export default function AdminKategoriPage() {
           <h1 className="text-xl font-bold text-gray-900">Manajemen Kategori</h1>
           <p className="text-sm text-gray-500">{kategori.length} kategori terdaftar</p>
         </div>
-        <Button onClick={openAdd} className="bg-indigo-600 hover:bg-indigo-700 gap-2">
+        <Button id="btn-tambah-kategori" onClick={openAdd} className="bg-orange-600 hover:bg-orange-700 gap-2">
           <Plus className="h-4 w-4" /> Tambah Kategori
         </Button>
       </div>
 
-      {loading ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => <div key={i} className="h-28 bg-white rounded-xl border border-gray-200 animate-pulse" />)}
-        </div>
-      ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {kategori.map(k => {
-            const IconComp = ICON_MAP[k.ikon] ?? Tag;
-            const count = produkCount[k.id] ?? 0;
-            return (
-              <div key={k.id} className="bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-md transition-all">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl bg-${k.warna}-100`}>
-                      <IconComp className={`h-5 w-5 text-${k.warna}-600`} />
+      {/* Tabel Kategori */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th className="text-left py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Kategori</th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Ikon</th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Warna</th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Deskripsi</th>
+              <th className="text-center py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Produk</th>
+              <th className="text-center py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {isLoading ? (
+              [...Array(5)].map((_, i) => (
+                <tr key={i}>
+                  {[...Array(6)].map((_, j) => (
+                    <td key={j} className="py-3 px-4"><Skeleton className="h-4 w-full" /></td>
+                  ))}
+                </tr>
+              ))
+            ) : kategori.map(k => {
+              const count = produkCount[k.id] ?? 0;
+              return (
+                <tr key={k.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="py-3 px-4">
+                    <p className="font-semibold text-gray-900">{k.nama}</p>
+                  </td>
+                  <td className="py-3 px-4">
+                    {/* Preview: kotak kecil dengan class warna + nama ikon sebagai teks */}
+                    <div className="flex items-center gap-2">
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${k.warna}`}>
+                        {k.ikon.slice(0, 2).toUpperCase()}
+                      </div>
+                      <code className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{k.ikon}</code>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{k.nama}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{count} produk</p>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-5 h-5 rounded flex-shrink-0 ${k.warna}`} />
+                      <code className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{k.warna}</code>
                     </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(k)} className="h-7 w-7 p-0 text-gray-500 hover:text-indigo-700">
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setDeleteDialog(k)} className="h-7 w-7 p-0 text-gray-500 hover:text-red-500" disabled={count > 0}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                {k.deskripsi && <p className="text-xs text-gray-500 mt-3 line-clamp-2">{k.deskripsi}</p>}
-              </div>
-            );
-          })}
-        </div>
-      )}
+                  </td>
+                  <td className="py-3 px-4 text-gray-500 text-xs max-w-[200px]">
+                    <p className="line-clamp-2">{k.deskripsi || '—'}</p>
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${count > 0 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-400'}`}>
+                      {count} produk
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(k)} className="h-7 w-7 p-0 text-gray-500 hover:text-orange-700">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost" size="sm"
+                        onClick={() => { setDeleteTarget(k); setDeleteOpen(true); }}
+                        className="h-7 w-7 p-0 text-gray-400 hover:text-red-500"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+            {!isLoading && kategori.length === 0 && (
+              <tr>
+                <td colSpan={6} className="py-12 text-center">
+                  <Tag className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-400 text-sm">Belum ada kategori</p>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Form Modal */}
+      {/* ── Form Modal ─────────────────────────────────────────── */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{editKat ? 'Edit Kategori' : 'Tambah Kategori Baru'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Nama */}
             <div className="space-y-1">
               <Label>Nama Kategori *</Label>
-              <Input {...register('nama')} placeholder="Nama kategori" className={errors.nama ? 'border-red-400' : ''} />
+              <Input {...register('nama')} placeholder="Paket Wisata, Tiket Pesawat, ..." className={errors.nama ? 'border-red-400' : ''} />
               {errors.nama && <p className="text-xs text-red-500">{errors.nama.message}</p>}
             </div>
 
-            <div className="space-y-2">
-              <Label>Ikon</Label>
-              <div className="flex flex-wrap gap-2">
-                {IKON_OPTIONS.map(ikon => {
-                  const I = ICON_MAP[ikon] ?? Tag;
-                  return (
-                    <button
-                      type="button"
-                      key={ikon}
-                      onClick={() => setValue('ikon', ikon)}
-                      className={`p-2 rounded-lg border-2 transition-all ${selectedIkon === ikon ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'}`}
-                      title={ikon}
-                    >
-                      <I className="h-4 w-4 text-gray-700" />
-                    </button>
-                  );
-                })}
+            {/* Ikon */}
+            <div className="space-y-1">
+              <Label>Nama Ikon Lucide *</Label>
+              <div className="flex gap-2 items-center">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${warnaWatch || 'bg-gray-400'}`}>
+                  {(ikonWatch || 'ic').slice(0, 2).toUpperCase()}
+                </div>
+                <Input
+                  {...register('ikon')}
+                  placeholder="map, plane, hotel, ship, shield-check, ..."
+                  className={`flex-1 ${errors.ikon ? 'border-red-400' : ''}`}
+                />
               </div>
+              <p className="text-xs text-gray-400">
+                Contoh: map, plane, hotel, ship, car, users, file-text, briefcase, shield-check
+              </p>
+              {errors.ikon && <p className="text-xs text-red-500">{errors.ikon.message}</p>}
             </div>
 
-            <div className="space-y-2">
-              <Label>Warna</Label>
-              <div className="flex flex-wrap gap-2">
-                {WARNA_OPTIONS.map(w => (
+            {/* Warna */}
+            <div className="space-y-1">
+              <Label>Class Warna Tailwind *</Label>
+              <div className="flex gap-2 items-center">
+                <div className={`w-9 h-9 rounded-lg flex-shrink-0 border border-gray-200 ${warnaWatch || 'bg-gray-200'}`} />
+                <Input
+                  {...register('warna')}
+                  placeholder="bg-blue-500, bg-emerald-500, bg-amber-600, ..."
+                  className={`flex-1 ${errors.warna ? 'border-red-400' : ''}`}
+                />
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {[
+                  'bg-blue-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-600',
+                  'bg-indigo-500', 'bg-rose-500', 'bg-purple-500', 'bg-cyan-500',
+                  'bg-teal-500', 'bg-slate-700',
+                ].map(c => (
                   <button
+                    key={c}
                     type="button"
-                    key={w}
-                    onClick={() => setValue('warna', w)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium border-2 transition-all capitalize bg-${w}-100 text-${w}-700 ${selectedWarna === w ? `border-${w}-500` : 'border-transparent'}`}
-                  >
-                    {w}
-                  </button>
+                    onClick={() => { const el = document.querySelector('[name="warna"]') as HTMLInputElement; if (el) { el.value = c; el.dispatchEvent(new Event('input', { bubbles: true })); } }}
+                    className={`w-6 h-6 rounded-full ${c} border-2 ${warnaWatch === c ? 'border-gray-900 scale-110' : 'border-transparent'} transition-all hover:scale-110`}
+                    title={c}
+                  />
                 ))}
               </div>
+              {errors.warna && <p className="text-xs text-red-500">{errors.warna.message}</p>}
             </div>
 
+            {/* Deskripsi */}
             <div className="space-y-1">
-              <Label>Deskripsi</Label>
-              <Textarea {...register('deskripsi')} rows={2} placeholder="Deskripsi singkat..." />
+              <Label>Deskripsi <span className="text-gray-400">(opsional)</span></Label>
+              <Textarea {...register('deskripsi')} rows={2} placeholder="Deskripsi singkat kategori ini..." />
             </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Batal</Button>
-              <Button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700">
-                {submitting ? 'Menyimpan...' : editKat ? 'Perbarui' : 'Tambahkan'}
+              <Button type="submit" disabled={isMutating || isSubmitting} className="bg-orange-600 hover:bg-orange-700">
+                {isMutating ? 'Menyimpan...' : editKat ? 'Simpan Perubahan' : 'Tambahkan'}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirm */}
-      <AlertDialog open={!!deleteDialog} onOpenChange={() => setDeleteDialog(null)}>
+      {/* ── Delete Confirmation ─────────────────────────────────── */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus Kategori?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Kategori "<strong>{deleteDialog?.nama}</strong>" akan dihapus permanen. Pastikan tidak ada produk yang terhubung.
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" /> Hapus Kategori?
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  Kategori <strong>"{deleteTarget?.nama}"</strong> akan dihapus permanen.
+                </p>
+                {deleteTargetProdukCount > 0 ? (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                    <strong>⚠️ Peringatan:</strong> Menghapus kategori ini akan menghapus{' '}
+                    <strong>{deleteTargetProdukCount} produk</strong> yang terkait secara permanen.
+                    Tindakan ini tidak dapat dibatalkan.
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    Kategori ini tidak memiliki produk. Penghapusan aman untuk dilakukan.
+                  </p>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Hapus</AlertDialogAction>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={e => {
+                e.preventDefault();
+                if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
+              }}
+              disabled={deleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteMutation.isPending
+                ? 'Menghapus...'
+                : deleteTargetProdukCount > 0
+                  ? `Ya, Hapus Beserta ${deleteTargetProdukCount} Produk`
+                  : 'Ya, Hapus Kategori'
+              }
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

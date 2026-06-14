@@ -45,7 +45,7 @@ export default function DetailPesananPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin h-10 w-10 rounded-full border-4 border-indigo-600 border-t-transparent" />
+        <div className="animate-spin h-10 w-10 rounded-full border-4 border-orange-600 border-t-transparent" />
       </div>
     </div>
   );
@@ -61,7 +61,7 @@ export default function DetailPesananPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3 flex-wrap">
-          <Link to="/pesanan/riwayat" className="text-indigo-600 hover:underline flex items-center gap-1 text-sm">
+          <Link to="/pesanan/riwayat" className="text-orange-600 hover:underline flex items-center gap-1 text-sm">
             <ArrowLeft className="h-4 w-4" /> Riwayat
           </Link>
           <div className="flex items-center gap-2 flex-1 flex-wrap">
@@ -70,7 +70,9 @@ export default function DetailPesananPage() {
             {pesanan.offline_pending && <Badge className="bg-amber-100 text-amber-700 text-xs">Pending Sync</Badge>}
           </div>
           <p className="text-sm text-gray-500">
-            {format(parseISO(pesanan.created_at), 'd MMMM yyyy', { locale: idLocale })}
+            {pesanan.created_at
+              ? format(parseISO(pesanan.created_at), 'd MMMM yyyy', { locale: idLocale })
+              : '—'}
           </p>
         </div>
 
@@ -143,7 +145,7 @@ export default function DetailPesananPage() {
           <Separator className="my-4" />
           <div className="flex justify-between items-center">
             <span className="font-semibold text-gray-700">Total Keseluruhan</span>
-            <span className="text-xl font-bold text-indigo-700">{formatRupiah(pesanan.total)}</span>
+            <span className="text-xl font-bold text-orange-700">{formatRupiah(pesanan.total)}</span>
           </div>
         </Card>
 

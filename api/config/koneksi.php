@@ -9,7 +9,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'OPTIONS'
     exit();
 }
 
-$host = '127.0.0.1';
+$host = 'localhost';
 $db   = 'tkn';
 $user = 'root';
 $pass = ''; // Default laragon password
@@ -25,7 +25,9 @@ $options = [
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-    echo json_encode(['success' => false, 'message' => 'Koneksi database gagal: ' . $e->getMessage()]);
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Koneksi gagal: ' . $e->getMessage()]);
     exit();
 }
 

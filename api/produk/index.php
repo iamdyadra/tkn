@@ -153,9 +153,18 @@ elseif ($method === 'DELETE') {
     if (!$id) {
         sendResponse(false, null, 'ID produk tidak ada');
     }
+
+    // Cek apakah produk sudah ada di pesanan_items
+    $stmtChk = $pdo->prepare("SELECT COUNT(*) FROM pesanan_items WHERE produk_id = ?");
+    $stmtChk->execute([$id]);
+    $count = (int)$stmtChk->fetchColumn();
+    if ($count > 0) {
+        sendResponse(false, null, "Produk tidak dapat dihapus karena sudah terdapat dalam {$count} item pesanan. Nonaktifkan produk sebagai gantinya.");
+    }
+
     $stmt = $pdo->prepare("DELETE FROM produk WHERE id = ?");
     if ($stmt->execute([$id])) {
-        sendResponse(true, null, 'Produk dihapus');
+        sendResponse(true, null, 'Produk berhasil dihapus');
     } else {
         sendResponse(false, null, 'Gagal menghapus produk');
     }
