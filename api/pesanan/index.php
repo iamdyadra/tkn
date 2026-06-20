@@ -275,29 +275,36 @@ elseif ($method === 'PUT') {
                     $applied_rule_id = null;
                     $audit_lines     = [];
 
+                    // Fetch all active rules to avoid N+1 queries in the loop
+                    $stmtRules = $pdo->query("
+                        SELECT * FROM komisi_rules 
+                        WHERE is_aktif = 1 
+                        ORDER BY min_transaksi DESC
+                    ");
+                    $activeRules = $stmtRules->fetchAll();
+
                     foreach ($items as $item) {
                         $subtotal    = (int)$item['subtotal'];
                         $kategori_id = (int)$item['kategori_id'];
                         $nama_produk = $item['nama_produk'];
 
                         // Match category-specific rule first
-                        $stmtRule = $pdo->prepare("
-                            SELECT * FROM komisi_rules
-                            WHERE kategori_id = ? AND is_aktif = 1 AND min_transaksi <= ?
-                            ORDER BY min_transaksi DESC LIMIT 1
-                        ");
-                        $stmtRule->execute([$kategori_id, $subtotal]);
-                        $rule = $stmtRule->fetch();
+                        $rule = null;
+                        foreach ($activeRules as $r) {
+                            if ($r['kategori_id'] !== null && (int)$r['kategori_id'] === $kategori_id && (int)$r['min_transaksi'] <= $subtotal) {
+                                $rule = $r;
+                                break;
+                            }
+                        }
 
+                        // Fallback to global rule if no category match
                         if (!$rule) {
-                            // Fallback to global rule
-                            $stmtGlobal = $pdo->prepare("
-                                SELECT * FROM komisi_rules
-                                WHERE kategori_id IS NULL AND is_aktif = 1 AND min_transaksi <= ?
-                                ORDER BY min_transaksi DESC LIMIT 1
-                            ");
-                            $stmtGlobal->execute([$subtotal]);
-                            $rule = $stmtGlobal->fetch();
+                            foreach ($activeRules as $r) {
+                                if ($r['kategori_id'] === null && (int)$r['min_transaksi'] <= $subtotal) {
+                                    $rule = $r;
+                                    break;
+                                }
+                            }
                         }
 
                         if ($rule) {

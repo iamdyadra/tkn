@@ -173,8 +173,8 @@ export const pesananApi = {
 
   async getByUser(salesId: number): Promise<Pesanan[]> {
     // Ambil data dari queue offline terlebih dahulu
-    const queue = JSON.parse(localStorage.getItem(QUEUE_KEY_PESANAN) || '[]');
-    const offlinePesanan: Pesanan[] = queue.map((p: any, idx: number) => ({
+    const queue = JSON.parse(localStorage.getItem(QUEUE_KEY_PESANAN) || '[]') as Pesanan[];
+    const offlinePesanan: Pesanan[] = queue.map((p, idx: number) => ({
       ...p,
       id: -1 - idx,
       kode: p.kode || `OFF-PENDING-${Date.now()}-${idx}`,
@@ -203,8 +203,9 @@ export const pesananApi = {
   async create(data: Omit<Pesanan, 'id' | 'kode' | 'status' | 'created_at'>): Promise<Pesanan> {
     if (!navigator.onLine) {
       const queue = JSON.parse(localStorage.getItem(QUEUE_KEY_PESANAN) || '[]');
-      const newOrder = {
+      const newOrder: Pesanan = {
         ...data,
+        id: -1,
         kode: `OFFLINE-${Date.now()}`,
         status: 'draft',
         offline_pending: true,
@@ -212,7 +213,7 @@ export const pesananApi = {
       };
       queue.push(newOrder);
       localStorage.setItem(QUEUE_KEY_PESANAN, JSON.stringify(queue));
-      return newOrder as any;
+      return newOrder;
     }
 
     return apiCall<Pesanan>(ENDPOINTS.pesanan.index, {

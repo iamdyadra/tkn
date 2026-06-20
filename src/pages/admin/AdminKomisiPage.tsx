@@ -109,8 +109,8 @@ export default function AdminKomisiPage() {
       );
       qc.invalidateQueries({ queryKey: ['admin-komisi'] });
       setConfirm({ open: false, action: null, komisiId: null });
-    } catch (err: any) {
-      toast.error(err.message ?? 'Gagal memperbarui komisi');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal memperbarui komisi');
     } finally {
       setActionLoading(false);
     }
@@ -161,19 +161,19 @@ export default function AdminKomisiPage() {
   const createRuleMutation = useMutation({
     mutationFn: (data: Omit<KomisiRule, 'id' | 'created_at' | 'kategori_nama'>) => komisiRulesApi.create(data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['komisi-rules'] }); toast.success('Rule berhasil ditambahkan'); setRuleDialogOpen(false); },
-    onError: (e: any) => toast.error(e.message ?? 'Gagal menambahkan rule'),
+    onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal menambahkan rule'),
   });
 
   const updateRuleMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<KomisiRule> }) => komisiRulesApi.update(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['komisi-rules'] }); toast.success('Rule berhasil diperbarui'); setRuleDialogOpen(false); },
-    onError: (e: any) => toast.error(e.message ?? 'Gagal memperbarui rule'),
+    onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal memperbarui rule'),
   });
 
   const deleteRuleMutation = useMutation({
     mutationFn: (id: number) => komisiRulesApi.delete(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['komisi-rules'] }); toast.success('Rule berhasil dihapus'); setDeleteRuleOpen(false); },
-    onError: (e: any) => toast.error(e.message ?? 'Gagal menghapus rule'),
+    onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal menghapus rule'),
   });
 
   const onRuleSubmit = (data: RuleFormData) => {

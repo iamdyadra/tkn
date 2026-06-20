@@ -87,19 +87,19 @@ export default function AdminSalesPage() {
       setAddModalOpen(false);
       createForm.reset();
     },
-    onError: (e: any) => toast.error(e.message ?? 'Gagal menambahkan akun'),
+    onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal menambahkan akun'),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: EditFormData }) =>
-      userApi.updateSales(id, data),
+      userApi.updateSales(id, data as { nama: string; email: string; telepon: string; wilayah: string }),
     onSuccess: () => {
       toast.success('Data sales berhasil diperbarui');
       qc.invalidateQueries({ queryKey: ['sales'] });
       setEditOpen(false);
       setEditTarget(null);
     },
-    onError: (e: any) => toast.error(e.message ?? 'Gagal memperbarui data sales'),
+    onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal memperbarui data sales'),
   });
 
   const toggleMutation = useMutation({
@@ -110,7 +110,7 @@ export default function AdminSalesPage() {
       setToggleOpen(false);
       setToggleTarget(null);
     },
-    onError: (e: any) => toast.error(e.message ?? 'Gagal mengubah status'),
+    onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal mengubah status'),
   });
 
   const deleteMutation = useMutation({
@@ -121,7 +121,7 @@ export default function AdminSalesPage() {
       setDeleteOpen(false);
       setDeleteTarget(null);
     },
-    onError: (e: any) => toast.error(e.message ?? 'Gagal menghapus akun sales'),
+    onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal menghapus akun sales'),
   });
 
   // ── Handlers ───────────────────────────────────────────────

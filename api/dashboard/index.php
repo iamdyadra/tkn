@@ -99,7 +99,7 @@ if ($method === 'GET') {
     }
 
     // ── 7. Pesanan hari ini ─────────────────────────────────────
-    $stmtHariIni = $pdo->prepare("SELECT COUNT(*) FROM pesanan WHERE DATE(created_at) = CURDATE()");
+    $stmtHariIni = $pdo->prepare("SELECT COUNT(*) FROM pesanan WHERE created_at >= CURRENT_DATE()");
     $stmtHariIni->execute();
     $pesanan_hari_ini = (int)$stmtHariIni->fetchColumn();
 

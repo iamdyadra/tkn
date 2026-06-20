@@ -5,7 +5,7 @@
 //   self.location.pathname = '/tkn/sw.js'  → APP_BASE_PATH = '/tkn/'
 const APP_BASE_PATH = self.location.pathname.substring(0, self.location.pathname.lastIndexOf('/') + 1);
 
-const CACHE_NAME = 'tkn-v2';
+const CACHE_NAME = 'tkn-v3';
 const ASSETS = [
   `${APP_BASE_PATH}`,
   `${APP_BASE_PATH}index.html`,

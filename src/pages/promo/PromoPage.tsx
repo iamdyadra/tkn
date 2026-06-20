@@ -25,13 +25,13 @@ function getDiskonPersen(normal: number, promo: number) {
 function useCountdownSeconds(targetDate?: string) {
   const [seconds, setSeconds] = useState(() => {
     if (!targetDate) return 0;
-    let ds = targetDate.includes(' ') ? targetDate.replace(' ', 'T') : targetDate;
+    const ds = targetDate.includes(' ') ? targetDate.replace(' ', 'T') : targetDate;
     return Math.max(0, differenceInSeconds(parseISO(ds), new Date()));
   });
 
   useEffect(() => {
     if (!targetDate) return;
-    let ds = targetDate.includes(' ') ? targetDate.replace(' ', 'T') : targetDate;
+    const ds = targetDate.includes(' ') ? targetDate.replace(' ', 'T') : targetDate;
     const update = () => setSeconds(Math.max(0, differenceInSeconds(parseISO(ds), new Date())));
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
@@ -162,7 +162,7 @@ export default function PromoPage() {
     : 0;
 
   const filtered = useMemo(() => {
-    let list = filterKategori === 'semua'
+    const list = filterKategori === 'semua'
       ? [...produkPromo]
       : produkPromo.filter(p => String(p.kategori_id) === filterKategori);
 

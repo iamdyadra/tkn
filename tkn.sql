@@ -67,7 +67,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `persen_komisi`  DECIMAL(5,2)               DEFAULT NULL COMMENT 'Override % komisi per sales. NULL = pakai rule global.',
   `created_at`     TIMESTAMP                  NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email_unique` (`email`)
+  UNIQUE KEY `email_unique` (`email`),
+  KEY `role_aktif_idx` (`role`, `is_aktif`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Seed user: password = "password" (bcrypt Laravel default hash)
@@ -105,7 +106,8 @@ CREATE TABLE IF NOT EXISTS `produk` (
   `created_at`    TIMESTAMP    NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `sku_unique` (`sku`),
-  KEY `kategori_id_idx` (`kategori_id`),
+  KEY `kategori_id_is_aktif_idx` (`kategori_id`, `is_aktif`),
+  KEY `is_aktif_idx` (`is_aktif`),
   CONSTRAINT `fk_produk_kategori`
     FOREIGN KEY (`kategori_id`) REFERENCES `kategori` (`id`)
     ON DELETE CASCADE ON UPDATE CASCADE
@@ -185,6 +187,7 @@ CREATE TABLE IF NOT EXISTS `pesanan` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `kode_unique` (`kode`),
   KEY `sales_id_idx` (`sales_id`),
+  KEY `created_at_idx` (`created_at`),
   CONSTRAINT `fk_pesanan_sales`
     FOREIGN KEY (`sales_id`) REFERENCES `users` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE

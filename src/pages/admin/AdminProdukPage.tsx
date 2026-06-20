@@ -13,7 +13,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { produkApi, kategoriApi } from '@/lib/api';
-import type { Produk } from '@/types';
+import type { Produk, SpesifikasiItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -192,7 +192,7 @@ export default function AdminProdukPage() {
       kategori_id:    data.kategori_id,
       kategori_nama:  kat?.nama ?? '',
       deskripsi:      data.deskripsi,
-      spesifikasi:    data.spesifikasi,
+      spesifikasi:    data.spesifikasi as SpesifikasiItem[],
       harga_normal:   data.harga_normal,
       harga_promo:    data.is_promo ? (data.harga_promo ?? null) : null,
       stok:           data.stok,
