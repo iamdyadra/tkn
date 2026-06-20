@@ -103,7 +103,7 @@ export default function DetailProdukPage() {
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* ── Gallery ──────────────────────────────────── */}
           <div className="space-y-3">
             <div className="aspect-[4/3] bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -147,6 +147,35 @@ export default function DetailProdukPage() {
               <p className="text-sm text-orange-600 font-medium">{produk.merek}</p>
               <h1 className="text-2xl font-bold text-gray-900 mt-1 leading-tight">{produk.nama}</h1>
             </div>
+
+            {/* Deskripsi Produk */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h2 className="text-sm font-semibold text-gray-900 mb-2">Deskripsi Produk</h2>
+              <div className={`text-gray-600 text-sm leading-relaxed overflow-hidden transition-all ${descExpanded ? '' : 'max-h-20'}`}>
+                <p>{produk.deskripsi}</p>
+              </div>
+              <button
+                onClick={() => setDescExpanded(!descExpanded)}
+                className="flex items-center gap-1 text-orange-600 text-xs font-medium mt-2 hover:underline"
+              >
+                {descExpanded ? <><ChevronUp className="h-3 w-3" /> Sembunyikan</> : <><ChevronDown className="h-3 w-3" /> Selengkapnya</>}
+              </button>
+            </div>
+
+            {/* Spesifikasi Teknis */}
+            {produk.spesifikasi.length > 0 && (
+              <div className="bg-white rounded-xl border border-gray-200 p-4">
+                <h2 className="text-sm font-semibold text-gray-900 mb-3">Spesifikasi Teknis</h2>
+                <div className="divide-y divide-gray-100">
+                  {produk.spesifikasi.map((s, i) => (
+                    <div key={i} className="grid grid-cols-2 py-2 gap-3">
+                      <span className="text-xs text-gray-500">{s.key}</span>
+                      <span className="text-xs text-gray-900 font-medium">{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Harga */}
             <div className="bg-gray-50 rounded-xl p-4 space-y-1 border border-gray-200">
@@ -222,32 +251,7 @@ export default function DetailProdukPage() {
           </div>
         </div>
 
-        {/* Deskripsi */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Deskripsi Produk</h2>
-          <div className={`text-gray-600 text-sm leading-relaxed overflow-hidden transition-all ${descExpanded ? '' : 'max-h-24'}`}>
-            <p>{produk.deskripsi}</p>
-          </div>
-          <button
-            onClick={() => setDescExpanded(!descExpanded)}
-            className="flex items-center gap-1 text-orange-600 text-sm font-medium mt-2 hover:underline"
-          >
-            {descExpanded ? <><ChevronUp className="h-4 w-4" /> Sembunyikan</> : <><ChevronDown className="h-4 w-4" /> Selengkapnya</>}
-          </button>
-        </div>
 
-        {/* Spesifikasi */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Spesifikasi Teknis</h2>
-          <div className="divide-y divide-gray-100">
-            {produk.spesifikasi.map((s, i) => (
-              <div key={i} className="grid grid-cols-2 py-2.5 gap-4">
-                <span className="text-sm text-gray-500">{s.key}</span>
-                <span className="text-sm text-gray-900 font-medium">{s.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Produk Serupa */}
         {serupa.length > 0 && (
